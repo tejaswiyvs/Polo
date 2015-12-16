@@ -1,4 +1,5 @@
 #include "../include/kernel/idt.h"
+#include <asm.h>
 #include <stdio.h>
 #include <stdint.h>
 
@@ -21,6 +22,9 @@
 #define ICW4_BUF_MASTER	0x0C		/* Buffered mode/master */
 #define ICW4_SFNM	0x10		/* Special fully nested (not) */
 
+#define PIC1_OFFSET 0x70
+#define PIC2_OFFSET 0x78
+
 struct IDTDescr {
   uint16_t offset_1;
   uint16_t selector;
@@ -28,6 +32,11 @@ struct IDTDescr {
   uint8_t type_attr;
   uint16_t offset_2;
 };
+
+void IRQ_set_mask(unsigned char IRQline);
+void IRQ_clear_mask(unsigned char IRQline);
+void PIC_sendEOI(unsigned char irq);
+static inline void lidt(void* base, uint16_t size);
 
 /* Why:
  * The CPU normally reserves INT 0-31 for it's private use to notify
@@ -51,9 +60,9 @@ void setup_and_remap_pics() {
 	io_wait();
 	outb(PIC2_COMMAND, ICW1_INIT+ICW1_ICW4);
 	io_wait();
-	outb(PIC1_DATA, offset1);                 // ICW2: Master PIC vector offset
+	outb(PIC1_DATA, PIC1_OFFSET);                 // ICW2: Master PIC vector offset
 	io_wait();
-	outb(PIC2_DATA, offset2);                 // ICW2: Slave PIC vector offset
+	outb(PIC2_DATA, PIC2_OFFSET);                 // ICW2: Slave PIC vector offset
 	io_wait();
 	outb(PIC1_DATA, 4);                       // ICW3: tell Master PIC that there is a slave PIC at IRQ2 (0000 0100)
 	io_wait();
@@ -77,8 +86,7 @@ void load_idt() {
   IRQ_set_mask(2);
 }
 
-void PIC_sendEOI(unsigned char irq)
-{
+void PIC_sendEOI(unsigned char irq) {
 	if(irq >= 8)
 		outb(PIC2_COMMAND,PIC_EOI);
 
@@ -111,4 +119,17 @@ void IRQ_clear_mask(unsigned char IRQline) {
     }
     value = inb(port) & ~(1 << IRQline);
     outb(port, value);
+}
+
+static inline void lidt(void* base, uint16_t size)
+{
+    struct
+    {
+        uint16_t length;
+        uint32_t base;
+    } __attribute__((packed)) IDTR;
+
+    IDTR.length = size;
+    IDTR.base = (uint32_t) base;
+    asm ( "lidt (%0)" : : "p"(&IDTR) );
 }
