@@ -26,12 +26,14 @@
 #define PIC2_OFFSET 0x78
 
 struct IDTDescr {
-  uint16_t offset_1;
-  uint16_t selector;
-  uint8_t zero;
-  uint8_t type_attr;
-  uint16_t offset_2;
+  uint16_t offset_1; // The lower 16 bits of the address to jump to when this interrupt fires.
+  uint16_t selector; // Kernel segment selector.
+  uint8_t zero;      // This must always be zero.
+  uint8_t type_attr; // More flags. See documentation.
+  uint16_t offset_2; // The upper 16 bits of the address to jump to.
 };
+
+typedef struct IDTDescr idt_entry_t;
 
 void IRQ_set_mask(unsigned char IRQline);
 void IRQ_clear_mask(unsigned char IRQline);
@@ -81,9 +83,13 @@ void setup_and_remap_pics() {
 /* interrupts are handled by priority level: 0, 1, 2, 8, 9, 10, 11, 12, 13,
    14, 15, 3, 4, 5, 6, 7. */
 void load_idt() {
+  // This should initialize the PIC and remap it PIC1 to 0x70-07x77 and
+  // PIC2 to 0x78-0x7E
   setup_and_remap_pics();
-  IRQ_set_mask(1);
-  IRQ_set_mask(2);
+
+  // We want to now setup and load the IDT. We only care about keyboard
+  // interrupts now, so just ack everything else blindly.
+
 }
 
 void PIC_sendEOI(unsigned char irq) {
@@ -91,34 +97,6 @@ void PIC_sendEOI(unsigned char irq) {
 		outb(PIC2_COMMAND,PIC_EOI);
 
 	outb(PIC1_COMMAND,PIC_EOI);
-}
-
-void IRQ_set_mask(unsigned char IRQline) {
-    uint16_t port;
-    uint8_t value;
-
-    if(IRQline < 8) {
-        port = PIC1_DATA;
-    } else {
-        port = PIC2_DATA;
-        IRQline -= 8;
-    }
-    value = inb(port) | (1 << IRQline);
-    outb(port, value);
-}
-
-void IRQ_clear_mask(unsigned char IRQline) {
-    uint16_t port;
-    uint8_t value;
-
-    if(IRQline < 8) {
-        port = PIC1_DATA;
-    } else {
-        port = PIC2_DATA;
-        IRQline -= 8;
-    }
-    value = inb(port) & ~(1 << IRQline);
-    outb(port, value);
 }
 
 static inline void lidt(void* base, uint16_t size)
@@ -133,3 +111,33 @@ static inline void lidt(void* base, uint16_t size)
     IDTR.base = (uint32_t) base;
     asm ( "lidt (%0)" : : "p"(&IDTR) );
 }
+
+//
+// void IRQ_set_mask(uint8_t IRQline) {
+//     uint16_t port;
+//     uint8_t value;
+//
+//     if(IRQline < 8) {
+//         port = PIC1_DATA;
+//     } else {
+//         port = PIC2_DATA;
+//         IRQline -= 8;
+//     }
+//     value = inb(port) | (1 << IRQline);
+//     outb(port, value);
+// }
+
+// void IRQ_clear_mask(unsigned char IRQline) {
+//     uint16_t port;
+//     uint8_t value;
+//
+//     if(IRQline < 8) {
+//         port = PIC1_DATA;
+//     } else {
+//         port = PIC2_DATA;
+//         IRQline -= 8;
+//     }
+//     value = inb(port) & ~(1 << IRQline);
+//     outb(port, value);
+// }
+//
