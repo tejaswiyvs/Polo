@@ -2,6 +2,8 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
+#include <serial.h>
+#include <log.h>
 
 #include <kernel/tty.h>
 #include "../include/kernel/idt.h"
@@ -9,16 +11,25 @@
 
 void kernel_early(void)
 {
-	// GRUB does set these up for us,
-	// but we want to be safe and write exactly what we want.
+	// init serial port for logging
+	init_serial();
+
+	logv("Welcome to Polo! I'm a toy operating system. Right now, I don't do much, but I hope to be able to be a minimal OS shell when I grow up :)");
+	logv("Stopping interrupts..");
+	stop_interrupts();
+	logv("Alright, we stopped those pesky interrupts!");
+
+	logv("Loading GDT");
 	load_gdt();
-	load_idt();
+	logv("Done loading GDT");
+	// load_idt();
 
 	// init the terminal
+	logv("Initializing terminal");
 	terminal_initialize();
 }
 
 void kernel_main(void)
 {
-	printf("Hello, kernel World!\n");
+	printf("Hello, World! Looks like I made it through the boot sequence alive!\n");
 }

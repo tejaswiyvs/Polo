@@ -30,6 +30,8 @@ gdt_entry_t gdt_entries[5];
 gdt_ptr_t   gdt_ptr;
 
 void load_gdt() {
+  printf("Loading GDT\n");
+
   gdt_ptr.limit = (sizeof(gdt_entry_t) * 5) - 1;
   gdt_ptr.base  = (uint32_t)&gdt_entries;
 
@@ -40,6 +42,8 @@ void load_gdt() {
   gdt_set_gate(4, 0, 0xFFFFFFFF, 0xF2, 0xCF); // User mode data segment
 
   gdt_flush((uint32_t)&gdt_ptr);
+
+  printf("Finished gdt flush");
 }
 
 // Set the value of one GDT entry.

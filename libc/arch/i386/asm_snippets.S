@@ -1,4 +1,5 @@
 .global gdt_flush
+.global stop_interrupts
 
 gdt_flush:
 	mov 4(%esp), %eax
@@ -15,3 +16,6 @@ gdt_flush:
 
 .flush:
 	ret
+
+stop_interrupts:
+	cli
