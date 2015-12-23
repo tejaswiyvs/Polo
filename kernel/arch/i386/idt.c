@@ -40,18 +40,18 @@ void IRQ_clear_mask(unsigned char IRQline);
 void PIC_sendEOI(unsigned char irq);
 static inline void lidt(void* base, uint16_t size);
 
-/* Why:
- * The CPU normally reserves INT 0-31 for it's private use to notify
- * catastrophic failures. However, the master PIC is mapped to 08h to 0Fh.
- * this obviously causes a conflict, how do we know if an interrupt (say INT9) is
- * from a catastrophic OS error, or if it's because of a hardware interrupt? We
- * can probe the hardware to check if an interrupt did occur, and take action
- * based on that, but that's slow, and hacky. So insted, we remap the PIC
- * interrupts from 08h-0Fh to a starting location that's a multiple of 08h
- * In this case, we pick PIC2 = 070h-077h, PIC1= 078h-7Fh
- *
-/* Note that IRQs can only be mapped to INTs that are multiples of 08h: 00h-07h,
- * 08h-0Fh, 10h-17h, 17h-1Fh. */
+ // Why:
+ // The CPU normally reserves INT 0-31 for it's private use to notify
+ // catastrophic failures. However, the master PIC is mapped to 08h to 0Fh.
+ // this obviously causes a conflict, how do we know if an interrupt (say INT9) is
+ // rom a catastrophic OS error, or if it's because of a hardware interrupt? We
+ // can probe the hardware to check if an interrupt did occur, and take action
+ // based on that, but that's slow, and hacky. So insted, we remap the PIC
+ // interrupts from 08h-0Fh to a starting location that's a multiple of 08h
+ // In this case, we pick PIC2 = 070h-077h, PIC1= 078h-7Fh
+ //
+ // Note that IRQs can only be mapped to INTs that are multiples of 08h: 00h-07h,
+ // * 08h-0Fh, 10h-17h, 17h-1Fh.
 void setup_and_remap_pics() {
   unsigned char a1, a2;
 
