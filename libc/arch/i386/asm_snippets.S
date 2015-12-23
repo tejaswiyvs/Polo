@@ -2,6 +2,9 @@
 .global stop_interrupts
 
 gdt_flush:
+	push $10
+	call logv
+
 	mov 4(%esp), %eax
 	lgdt (%eax)
 
