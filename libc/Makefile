@@ -35,6 +35,7 @@ stdio/puts.o \
 stdio/serial.o \
 stdlib/abort.o \
 stdlib/log.o \
+stdlib/itoa.o \
 string/memcmp.o \
 string/memcpy.o \
 string/memmove.o \
