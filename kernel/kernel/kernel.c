@@ -13,12 +13,7 @@ void kernel_early(void)
 {
 	// init serial port for logging
 	init_serial();
-
 	logv("Welcome to Polo! I'm a toy operating system. Right now, I don't do much, but I hope to be able to be a minimal OS shell when I grow up :)");
-	logv("Stopping interrupts..");
-	stop_interrupts();
-	logv("Alright, we stopped those pesky interrupts!");
-
 	logv("Loading GDT");
 	load_gdt();
 	logv("Done loading GDT");

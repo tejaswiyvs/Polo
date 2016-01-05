@@ -6,5 +6,6 @@
 #define logi(message) log("INFO", __FILE__, __LINE__, message);
 
 void log(char *level, char *file, int line, char *message);
+void log_asm();
 
 #endif

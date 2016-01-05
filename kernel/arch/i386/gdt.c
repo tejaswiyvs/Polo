@@ -1,5 +1,6 @@
 #include "../include/kernel/gdt.h"
 #include <stdint.h>
+#include <stdlib.h>
 #include <log.h>
 
 struct GDTDescr {
@@ -26,13 +27,12 @@ typedef struct GDTDescr gdt_entry_t;
 
 extern void gdt_flush(uint32_t);
 static void gdt_set_gate(int32_t, uint32_t, uint32_t, uint8_t, uint8_t);
+static void print_gdt();
 
 gdt_entry_t gdt_entries[5];
 gdt_ptr_t   gdt_ptr;
 
 void load_gdt() {
-  logi("Loading GDT\n");
-
   gdt_ptr.limit = (sizeof(gdt_entry_t) * 5) - 1;
   gdt_ptr.base  = (uint32_t)&gdt_entries;
 
@@ -42,11 +42,16 @@ void load_gdt() {
   gdt_set_gate(3, 0, 0xFFFFFFFF, 0xFA, 0xCF); // User mode code segment
   gdt_set_gate(4, 0, 0xFFFFFFFF, 0xF2, 0xCF); // User mode data segment
 
-  logi("Flushing the GDT");
+  print_gdt();
 
   gdt_flush((uint32_t)&gdt_ptr);
+}
 
-  logi("Finished gdt flush");
+static void print_gdt() {
+  logv("GDT Sizes:");
+  logv(itoa(sizeof(gdt_entry_t)))
+  logv(itoa((int)gdt_ptr.base));
+  logv(itoa((int)gdt_ptr.limit));
 }
 
 // Set the value of one GDT entry.

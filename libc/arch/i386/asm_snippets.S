@@ -2,6 +2,7 @@
 .global stop_interrupts
 
 gdt_flush:
+	cli
 	mov 4(%esp), %eax
 	lgdt (%eax)
 
@@ -12,6 +13,8 @@ gdt_flush:
 	mov %ax, %gs
 	mov %ax, %ss
 
+	xchgw %bx, %bx
+
   jmp $0x08, $.flush		# far jump to populate cs
 
 .flush:
@@ -19,3 +22,6 @@ gdt_flush:
 
 stop_interrupts:
 	cli
+
+.section .data:
+	hello: .asciz "Ping\n"
