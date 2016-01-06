@@ -9,4 +9,6 @@ typedef signed long int   int32_t;
 typedef signed int        int16_t;
 typedef signed char       int8_t;
 
+typedef unsigned long     size_t;
+
 #endif

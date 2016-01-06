@@ -2,10 +2,11 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdint.h>
 
 static void print(const char* data, size_t data_length)
 {
-	for ( size_t i = 0; i < data_length; i++ )
+	for (size_t i = 0; i < data_length; i++ )
 		putchar((int) ((const unsigned char*) data)[i]);
 }
 
@@ -24,7 +25,7 @@ int printf(const char* restrict format, ...)
 		{
 		print_c:
 			amount = 1;
-			while ( format[amount] && format[amount] != '%' )
+			while (format[amount] && format[amount] != '%' )
 				amount++;
 			print(format, amount);
 			format += amount;

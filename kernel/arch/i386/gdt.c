@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <log.h>
+#include <stdio.h>
 
 struct GDTDescr {
   uint16_t limit_low; // The lower 16 bits of the limit
@@ -49,9 +50,6 @@ void load_gdt() {
 
 static void print_gdt() {
   logv("GDT Sizes:");
-  logv(itoa(sizeof(gdt_entry_t)))
-  logv(itoa((int)gdt_ptr.base));
-  logv(itoa((int)gdt_ptr.limit));
 }
 
 // Set the value of one GDT entry.
