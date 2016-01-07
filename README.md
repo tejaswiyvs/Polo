@@ -11,7 +11,8 @@ First steps into OSDev. The project is based off of the excellent [OSDev](http:/
 **Features planned:**
 
  - Interrupt Handlers
- - Expand libc or integrate a 3rd party [libc](http://wiki.osdev.org/C_Library) 
+ - Proper exception handlers so we don't silently tripe-fault
+ - Expand libc or integrate a 3rd party [libc](http://wiki.osdev.org/C_Library)
  - Memory manager
  - File system Driver
  - Minimal Unix like shell

@@ -1,13 +1,18 @@
 #include <log.h>
 #include <serial.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <stdio.h>
 
-// void print_mem(void const *vp, size_t n)
-// {
-//     unsigned char const *p = vp;
-//     for (size_t i=0; i<n; i++)
-//         write_string_serial("%02x\n", p[i]);
-//     putchar('\n');
-// }
+void print_mem(void const *vp, size_t n)
+{
+    unsigned char const *p = vp;
+    for (size_t i=0; i<n; i++) {
+      char *str;
+      int count = sprintf(str, "%02x", p[i]);
+      write_string_serial(str);
+    }
+}
 
 void log(char *level, char *file, int line, char *message) {
   write_string_serial(level);

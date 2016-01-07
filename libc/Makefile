@@ -37,6 +37,7 @@ stdio/serial.o \
 stdlib/abort.o \
 stdlib/log.o \
 stdlib/itoa.o \
+stdlib/atoi.o \
 string/memcmp.o \
 string/memcpy.o \
 string/memmove.o \

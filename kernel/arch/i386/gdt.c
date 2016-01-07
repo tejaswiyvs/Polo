@@ -49,7 +49,9 @@ void load_gdt() {
 }
 
 static void print_gdt() {
-  logv("GDT Sizes:");
+  for (int i = 0; i < 5; i++) {
+    print_mem(&gdt_entries[i], sizeof(gdt_entry_t));
+  }
 }
 
 // Set the value of one GDT entry.
