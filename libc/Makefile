@@ -30,6 +30,7 @@ FREEOBJS:=\
 $(ARCH_FREEOBJS) \
 $(ARCHDIR)/asm_snippets.o \
 stdio/printf.o \
+stdio/sprintf.o \
 stdio/putchar.o \
 stdio/puts.o \
 stdio/serial.o \

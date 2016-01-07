@@ -8,13 +8,10 @@
 extern "C" {
 #endif
 
+int sprintf(char* str, const char* format, ...);
 int printf(const char* __restrict, ...);
 int putchar(int);
 int puts(const char*);
-
-#define PRINT_OPAQUE_STRUCT(p)  print_mem((p), sizeof(*(p)))
-
-void print_mem(void const *vp, size_t n);
 
 #ifdef __cplusplus
 }

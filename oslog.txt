@@ -1,6 +1,3 @@
 VRB	kernel/kernel.c	16	Welcome to Polo! I'm a toy operating system. Right now, I don't do much, but I hope to be able to be a minimal OS shell when I grow up :)
 VRB	kernel/kernel.c	17	Loading GDT
-VRB	arch/i386/gdt.c	51	GDT Sizes:
-VRB	arch/i386/gdt.c	52	52
-VRB	arch/i386/gdt.c	53	1060853
-VRB	arch/i386/gdt.c	54	5
+VRB	arch/i386/gdt.c	52	GDT Sizes:
