@@ -31,113 +31,107 @@ struct IDTDescr {
   uint8_t zero;      // This must always be zero.
   uint8_t type_attr; // More flags. See documentation.
   uint16_t offset_2; // The upper 16 bits of the address to jump to.
-};
+} __attribute__((packed));
+
+struct IDTPtr {
+  uint16_t limit;
+  uint16_t base;
+} __attribute__((packed));
 
 typedef struct IDTDescr idt_entry_t;
+typedef struct IDTPtr idt_ptr_t;
 
-void IRQ_set_mask(unsigned char IRQline);
-void IRQ_clear_mask(unsigned char IRQline);
-void PIC_sendEOI(unsigned char irq);
-static inline void lidt(void* base, uint16_t size);
+// Yikes! Address of each ISR. ISRs in assembly
+extern void isr0();
+extern void isr1();
+extern void isr2();
+extern void isr3();
+extern void isr4();
+extern void isr5();
+extern void isr6();
+extern void isr7();
+extern void isr8();
+extern void isr9();
+extern void isr10();
+extern void isr11();
+extern void isr12();
+extern void isr13();
+extern void isr14();
+extern void isr15();
+extern void isr16();
+extern void isr17();
+extern void isr18();
+extern void isr19();
+extern void isr20();
+extern void isr21();
+extern void isr22();
+extern void isr23();
+extern void isr24();
+extern void isr25();
+extern void isr26();
+extern void isr27();
+extern void isr28();
+extern void isr29();
+extern void isr30();
+extern void isr31();
 
- // Why:
- // The CPU normally reserves INT 0-31 for it's private use to notify
- // catastrophic failures. However, the master PIC is mapped to 08h to 0Fh.
- // this obviously causes a conflict, how do we know if an interrupt (say INT9) is
- // rom a catastrophic OS error, or if it's because of a hardware interrupt? We
- // can probe the hardware to check if an interrupt did occur, and take action
- // based on that, but that's slow, and hacky. So insted, we remap the PIC
- // interrupts from 08h-0Fh to a starting location that's a multiple of 08h
- // In this case, we pick PIC2 = 070h-077h, PIC1= 078h-7Fh
- //
- // Note that IRQs can only be mapped to INTs that are multiples of 08h: 00h-07h,
- // * 08h-0Fh, 10h-17h, 17h-1Fh.
-void setup_and_remap_pics() {
-  unsigned char a1, a2;
+extern void idt_flush();
 
-	a1 = inb(PIC1_DATA);                        // save masks
-	a2 = inb(PIC2_DATA);
+static void idt_set_gate(uint8_t, uint32_t, uint16_t, uint8_t);
 
-	outb(PIC1_COMMAND, ICW1_INIT+ICW1_ICW4);  // starts the initialization sequence (in cascade mode)
-	io_wait();
-	outb(PIC2_COMMAND, ICW1_INIT+ICW1_ICW4);
-	io_wait();
-	outb(PIC1_DATA, PIC1_OFFSET);                 // ICW2: Master PIC vector offset
-	io_wait();
-	outb(PIC2_DATA, PIC2_OFFSET);                 // ICW2: Slave PIC vector offset
-	io_wait();
-	outb(PIC1_DATA, 4);                       // ICW3: tell Master PIC that there is a slave PIC at IRQ2 (0000 0100)
-	io_wait();
-	outb(PIC2_DATA, 2);                       // ICW3: tell Slave PIC its cascade identity (0000 0010)
-	io_wait();
+idt_entry_t idt_entries[256];
+idt_ptr_t idt_ptr;
 
-	outb(PIC1_DATA, ICW4_8086);
-	io_wait();
-	outb(PIC2_DATA, ICW4_8086);
-	io_wait();
+static void load_idt() {
+  idt_ptr.limit = sizeof(idt_entry_t) * 256 - 1;
+  idt_ptr.base = (uint32_t) &idt_entries;
 
-	outb(PIC1_DATA, a1);   // restore saved masks.
-	outb(PIC2_DATA, a2);
+  memset(&idt_entries, 0, sizeof(idt_entry_t) * 256);
+
+  idt_set_gate(0, (uint32_t)isr0, 0x08, 0x8E);
+  idt_set_gate(1, (uint32_t)isr1, 0x08, 0x8E);
+  idt_set_gate(2, (uint32_t)isr2, 0x08, 0x8E);
+  idt_set_gate(3, (uint32_t)isr3, 0x08, 0x8E);
+  idt_set_gate(4, (uint32_t)isr4, 0x08, 0x8E);
+  idt_set_gate(5, (uint32_t)isr5, 0x08, 0x8E);
+  idt_set_gate(6, (uint32_t)isr6, 0x08, 0x8E);
+  idt_set_gate(7, (uint32_t)isr7, 0x08, 0x8E);
+  idt_set_gate(8, (uint32_t)isr8, 0x08, 0x8E);
+  idt_set_gate(9, (uint32_t)isr9, 0x08, 0x8E);
+  idt_set_gate(10, (uint32_t)isr10, 0x08, 0x8E);
+  idt_set_gate(11, (uint32_t)isr11, 0x08, 0x8E);
+  idt_set_gate(12, (uint32_t)isr12, 0x08, 0x8E);
+  idt_set_gate(13, (uint32_t)isr13, 0x08, 0x8E);
+  idt_set_gate(14, (uint32_t)isr14, 0x08, 0x8E);
+  idt_set_gate(15, (uint32_t)isr15, 0x08, 0x8E);
+  idt_set_gate(16, (uint32_t)isr16, 0x08, 0x8E);
+  idt_set_gate(17, (uint32_t)isr17, 0x08, 0x8E);
+  idt_set_gate(18, (uint32_t)isr18, 0x08, 0x8E);
+  idt_set_gate(19, (uint32_t)isr19, 0x08, 0x8E);
+  idt_set_gate(20, (uint32_t)isr20, 0x08, 0x8E);
+  idt_set_gate(21, (uint32_t)isr21, 0x08, 0x8E);
+  idt_set_gate(22, (uint32_t)isr22, 0x08, 0x8E);
+  idt_set_gate(23, (uint32_t)isr23, 0x08, 0x8E);
+  idt_set_gate(24, (uint32_t)isr24, 0x08, 0x8E);
+  idt_set_gate(25, (uint32_t)isr25, 0x08, 0x8E);
+  idt_set_gate(26, (uint32_t)isr26, 0x08, 0x8E);
+  idt_set_gate(27, (uint32_t)isr27, 0x08, 0x8E);
+  idt_set_gate(28, (uint32_t)isr28, 0x08, 0x8E);
+  idt_set_gate(29, (uint32_t)isr29, 0x08, 0x8E);
+  idt_set_gate(30, (uint32_t)isr30, 0x08, 0x8E);
+  idt_set_gate(31, (uint32_t)isr31, 0x08, 0x8E);
+
+  idt_flush((uint32_t)&idt_ptr);
 }
 
-/* interrupts are handled by priority level: 0, 1, 2, 8, 9, 10, 11, 12, 13,
-   14, 15, 3, 4, 5, 6, 7. */
-void load_idt() {
-  // This should initialize the PIC and remap it PIC1 to 0x70-07x77 and
-  // PIC2 to 0x78-0x7E
-  setup_and_remap_pics();
-
-  // We want to now setup and load the IDT. We only care about keyboard
-  // interrupts now, so just ack everything else blindly.
-
-}
-
-void PIC_sendEOI(unsigned char irq) {
-	if(irq >= 8)
-		outb(PIC2_COMMAND,PIC_EOI);
-
-	outb(PIC1_COMMAND,PIC_EOI);
-}
-
-static inline void lidt(void* base, uint16_t size)
+static void idt_set_gate(uint8_t num, uint32_t base, uint16_t selector, uint8_t flags)
 {
-    struct
-    {
-        uint16_t length;
-        uint32_t base;
-    } __attribute__((packed)) IDTR;
+  idt_entries[num].base_lo = base & 0xFFFF;
+  idt_entries[num].base_hi = (base >> 16) & 0xFFFF;
+  idt_entries[num].sel = sel;
+  idt_entries[num].always0 = 0;
 
-    IDTR.length = size;
-    IDTR.base = (uint32_t) base;
-    asm ( "lidt (%0)" : : "p"(&IDTR) );
+  // We must uncomment the OR below when we get to the user-mode.
+  // It sets the interrupt gate's privilege level to 3.
+  idt_entries[num].flags = flags /* | 0x60 */;
 }
-
-//
-// void IRQ_set_mask(uint8_t IRQline) {
-//     uint16_t port;
-//     uint8_t value;
-//
-//     if(IRQline < 8) {
-//         port = PIC1_DATA;
-//     } else {
-//         port = PIC2_DATA;
-//         IRQline -= 8;
-//     }
-//     value = inb(port) | (1 << IRQline);
-//     outb(port, value);
-// }
-
-// void IRQ_clear_mask(unsigned char IRQline) {
-//     uint16_t port;
-//     uint8_t value;
-//
-//     if(IRQline < 8) {
-//         port = PIC1_DATA;
-//     } else {
-//         port = PIC2_DATA;
-//         IRQline -= 8;
-//     }
-//     value = inb(port) & ~(1 << IRQline);
-//     outb(port, value);
-// }
-//
