@@ -2,7 +2,6 @@
   .global isr\int_no
   isr\int_no:
     cli
-    xchgw %bx, %bx
     pushw 0
     pushw \int_no
     jmp isr_common_stub
@@ -12,7 +11,6 @@
   .global isr\int_no
   isr\int_no:
     cli
-    xchgw %bx, %bx
     pushw \int_no
     jmp isr_common_stub
 .endm
@@ -58,7 +56,6 @@ ISR_NOERRCODE 31
 # mode segments, calls the C-level fault handler, and finally restores the stack
 # frame
 isr_common_stub:
-  xchgw %bx, %bx
   pusha           # push all general purpose registers onto the stack
   mov %ds, %ax
   push %eax

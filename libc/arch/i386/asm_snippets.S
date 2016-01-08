@@ -8,9 +8,6 @@
 # invoke using gdt_flush(&gdtr_address);
 gdt_flush:
 	cli
-
-	xchgw %bx, %bx
-
 	mov 4(%esp), %eax
 	lgdt (%eax)
 
@@ -30,13 +27,12 @@ gdt_flush:
 	# We cannot directly load cs. So far jump to populate it instead.
   jmp $0x08, $.flush
 
+.flush:
+		# No need to start interrupts again because the OS will do so when it sets up
+		# the IDT
+		ret
+
 idt_flush:
-	xchgw %bx, %bx
 	mov 4(%esp), %eax
 	lidt (%eax)
-	ret
-
-.flush:
-	# No need to start interrupts again because the OS will do so when it sets up
-	# the IDT
 	ret

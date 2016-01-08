@@ -37,11 +37,10 @@ void kernel_main(void)
 	asm volatile ("xchgw %bx, %bx");
 	asm volatile ("int $0x3");
 	asm volatile ("int $0x4");
+	asm volatile ("xchgw %bx, %bx");
 
 	// init the terminal
 	logv("Initializing terminal");
 	terminal_initialize();
 	printf("Hello, World! Looks like I made it through the boot sequence alive!\n");
-
-	while(1);
 }

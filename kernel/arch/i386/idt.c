@@ -37,7 +37,7 @@ struct IDTDescr {
 
 struct IDTPtr {
   uint16_t limit;
-  uint16_t base;
+  uint32_t base;
 } __attribute__((packed));
 
 typedef struct IDTDescr idt_entry_t;
