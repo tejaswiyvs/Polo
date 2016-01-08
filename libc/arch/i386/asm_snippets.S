@@ -8,22 +8,27 @@
 # invoke using gdt_flush(&gdtr_address);
 gdt_flush:
 	cli
+
+	xchgw %bx, %bx
+
 	mov 4(%esp), %eax
 	lgdt (%eax)
-	ret
-	# The code below is useful if our kernel loads up in the higher half.
-	# since we just have a bare bones kernel that GRUB loaded, this isn't necessary.
 
-	# mov $0x10, %ax
-	# mov %ax, %ds
-	# mov %ax, %es
-	# mov %ax, %fs
-	# mov %ax, %gs
-	# mov %ax, %ss
+	# Load up the segment registers with 0x10
+	# 0x10 = dec 16
+	# GDT looks like this:
+	# address 0: Null
+	# address 8: Code Segment
+	# address 16: Data segment
+	mov $0x10, %ax
+	mov %ax, %ds
+	mov %ax, %es
+	mov %ax, %fs
+	mov %ax, %gs
+	mov %ax, %ss
 
-	# xchgw %bx, %bx
-
-  # ljmp $0x08, $.flush		# far jump to populate cs
+	# We cannot directly load cs. So far jump to populate it instead.
+  jmp $0x08, $.flush
 
 idt_flush:
 	xchgw %bx, %bx

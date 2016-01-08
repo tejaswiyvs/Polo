@@ -12,13 +12,13 @@
 #define PIC2_COMMAND	PIC2
 #define PIC2_DATA	(PIC2+1)
 #define PIC_EOI		0x20		/* End-of-interrupt command code */
-#define ICW1_ICW4	0x01		/* ICW4 (not) needed */
+#define ICW1_ICW4	0x08		/* ICW4 (not) needed */
 #define ICW1_SINGLE	0x02		/* Single (cascade) mode */
 #define ICW1_INTERVAL4	0x04		/* Call address interval 4 (8) */
 #define ICW1_LEVEL	0x08		/* Level triggered (edge) mode */
 #define ICW1_INIT	0x10		/* Initialization - required! */
 
-#define ICW4_8086	0x01		/* 8086/88 (MCS-80/85) mode */
+#define ICW4_8086	0x08		/* 8086/88 (MCS-80/85) mode */
 #define ICW4_AUTO	0x02		/* Auto (normal) EOI */
 #define ICW4_BUF_SLAVE	0x08		/* Buffered mode/slave */
 #define ICW4_BUF_MASTER	0x0C		/* Buffered mode/master */
@@ -126,7 +126,6 @@ void load_idt() {
   idt_set_gate(30, (uint32_t)isr30, 0x08, 0x8E);
   idt_set_gate(31, (uint32_t)isr31, 0x08, 0x8E);
 
-  logv("Flushing IDT");
   idt_flush((uint32_t)&idt_ptr);
 }
 

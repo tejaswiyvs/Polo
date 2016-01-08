@@ -7,7 +7,7 @@
 struct GDTDescr {
   uint16_t limit_low; // The lower 16 bits of the limit
   uint16_t base_low;
-  uint16_t base_middle;
+  uint8_t base_middle;
   uint8_t access;
   uint8_t granularity;
   uint8_t base_high;
@@ -40,7 +40,7 @@ void load_gdt() {
   gdt_set_gate(2, 0, 0xFFFFFFFF, 0x92, 0xCF); // Data segment
   // gdt_set_gate(3, 0, 0xFFFFFFFF, 0xFA, 0xCF); // User mode code segment
   // gdt_set_gate(4, 0, 0xFFFFFFFF, 0xF2, 0xCF); // User mode data segment
-
+  // We also might want a TSS entry in the future.
   // print_gdt();
 
   gdt_flush((uint32_t)&gdt_ptr);

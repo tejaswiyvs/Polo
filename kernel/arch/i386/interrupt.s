@@ -2,8 +2,9 @@
   .global isr\int_no
   isr\int_no:
     cli
-    pushl 0
-    pushl \int_no
+    xchgw %bx, %bx
+    pushw 0
+    pushw \int_no
     jmp isr_common_stub
 .endm
 
@@ -11,7 +12,8 @@
   .global isr\int_no
   isr\int_no:
     cli
-    pushl \int_no
+    xchgw %bx, %bx
+    pushw \int_no
     jmp isr_common_stub
 .endm
 

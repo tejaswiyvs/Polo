@@ -11,7 +11,9 @@
 
 void kernel_early(void)
 {
-
+	// disable interrupts.
+	asm volatile("cli");
+	load_gdt();
 }
 
 void kernel_main(void)
@@ -24,13 +26,15 @@ void kernel_main(void)
 	// Setup the GDT
 	// Interrupts will be disabled by load_gdt()
 	logv("Loading GDT");
-	load_gdt();
+	logv("Done loading GDT");
 
 	// Setup interrupts!
 	logv("Loading interrupts");
 	load_idt();
+	logv("Done loading IDT");
 
 	// Trigger some interrupts to ensure they're working
+	asm volatile ("xchgw %bx, %bx");
 	asm volatile ("int $0x3");
 	asm volatile ("int $0x4");
 
@@ -38,4 +42,6 @@ void kernel_main(void)
 	logv("Initializing terminal");
 	terminal_initialize();
 	printf("Hello, World! Looks like I made it through the boot sequence alive!\n");
+
+	while(1);
 }

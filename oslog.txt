@@ -1,4 +1,5 @@
-VRB	kernel/kernel.c	22	Welcome to Polo! I'm a toy operating system. Right now, I don't do much, but I hope to be able to be a minimal OS shell when I grow up :)
-VRB	kernel/kernel.c	26	Loading GDT
-VRB	kernel/kernel.c	30	Loading interrupts
-VRB	arch/i386/idt.c	126	Flushing IDT
+VRB	kernel/kernel.c	24	Welcome to Polo! I'm a toy operating system. Right now, I don't do much, but I hope to be able to be a minimal OS shell when I grow up :)
+VRB	kernel/kernel.c	28	Loading GDT
+VRB	kernel/kernel.c	29	Done loading GDT
+VRB	kernel/kernel.c	32	Loading interrupts
+VRB	kernel/kernel.c	34	Done loading IDT
