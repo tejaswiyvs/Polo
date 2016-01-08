@@ -26,6 +26,7 @@ gdt_flush:
   # ljmp $0x08, $.flush		# far jump to populate cs
 
 idt_flush:
+	xchgw %bx, %bx
 	mov 4(%esp), %eax
 	lidt (%eax)
 	ret

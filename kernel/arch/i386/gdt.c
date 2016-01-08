@@ -27,7 +27,6 @@ typedef struct GDTDescr gdt_entry_t;
 
 extern void gdt_flush(uint32_t);
 static void gdt_set_gate(int32_t, uint32_t, uint32_t, uint8_t, uint8_t);
-static void print_gdt();
 
 gdt_entry_t gdt_entries[3];
 gdt_ptr_t   gdt_ptr;

@@ -2,6 +2,8 @@
 #include <asm.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <string.h>
+#include <log.h>
 
 #define PIC1		0x20		/* IO base address for master PIC */
 #define PIC2		0xA0		/* IO base address for slave PIC */
@@ -26,11 +28,11 @@
 #define PIC2_OFFSET 0x78
 
 struct IDTDescr {
-  uint16_t offset_1; // The lower 16 bits of the address to jump to when this interrupt fires.
-  uint16_t selector; // Kernel segment selector.
-  uint8_t zero;      // This must always be zero.
-  uint8_t type_attr; // More flags. See documentation.
-  uint16_t offset_2; // The upper 16 bits of the address to jump to.
+  uint16_t base_lo; // The lower 16 bits of the address to jump to when this interrupt fires.
+  uint16_t sel; // Kernel segment selector.
+  uint8_t always;      // This must always be zero.
+  uint8_t flags; // More flags. See documentation.
+  uint16_t base_hi; // The upper 16 bits of the address to jump to.
 } __attribute__((packed));
 
 struct IDTPtr {
@@ -82,10 +84,13 @@ static void idt_set_gate(uint8_t, uint32_t, uint16_t, uint8_t);
 idt_entry_t idt_entries[256];
 idt_ptr_t idt_ptr;
 
-static void load_idt() {
+void load_idt() {
   idt_ptr.limit = sizeof(idt_entry_t) * 256 - 1;
   idt_ptr.base = (uint32_t) &idt_entries;
 
+  // We've allocated space for 256 entries, but we only care about 31 of them
+  // for now. As long as we provide a null interrupt handler to the CPU
+  // It's satisfied, but we *have* to provide one for each interrupt from 0 - 256
   memset(&idt_entries, 0, sizeof(idt_entry_t) * 256);
 
   idt_set_gate(0, (uint32_t)isr0, 0x08, 0x8E);
@@ -121,6 +126,7 @@ static void load_idt() {
   idt_set_gate(30, (uint32_t)isr30, 0x08, 0x8E);
   idt_set_gate(31, (uint32_t)isr31, 0x08, 0x8E);
 
+  logv("Flushing IDT");
   idt_flush((uint32_t)&idt_ptr);
 }
 
@@ -128,8 +134,8 @@ static void idt_set_gate(uint8_t num, uint32_t base, uint16_t selector, uint8_t 
 {
   idt_entries[num].base_lo = base & 0xFFFF;
   idt_entries[num].base_hi = (base >> 16) & 0xFFFF;
-  idt_entries[num].sel = sel;
-  idt_entries[num].always0 = 0;
+  idt_entries[num].sel = selector;
+  idt_entries[num].always = 0;
 
   // We must uncomment the OR below when we get to the user-mode.
   // It sets the interrupt gate's privilege level to 3.

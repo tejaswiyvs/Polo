@@ -30,6 +30,10 @@ void kernel_main(void)
 	logv("Loading interrupts");
 	load_idt();
 
+	// Trigger some interrupts to ensure they're working
+	asm volatile ("int $0x3");
+	asm volatile ("int $0x4");
+
 	// init the terminal
 	logv("Initializing terminal");
 	terminal_initialize();
