@@ -60,19 +60,21 @@ isr_common_stub:
   mov %ds, %ax
   push %eax
 
-  # mov $0x10, %ax
-  # mov %ax, %ds
-  # mov %ax, %es
-  # mov %ax, %fs
-  # mov %ax, %gs
+  xchgw %bx, %bx
+  mov $0x10, %ax
+  mov %ax, %ds
+  mov %ax, %es
+  mov %ax, %fs
+  mov %ax, %gs
 
   call isr_handler
 
+  xchgw %bx, %bx
   pop %eax
-  # mov %ax, %ds
-  # mov %ax, %es
-  # mov %ax, %fs
-  # mov %ax, %gs
+  mov %ax, %ds
+  mov %ax, %es
+  mov %ax, %fs
+  mov %ax, %gs
 
   popa           # Previously we've pushed all the GPRs onto the stack using pusha. Restore all of those using popa
   add $8, %esp

@@ -6,6 +6,5 @@ void isr_handler(register_t regs)
 {
   char *output;
   int num_chars = sprintf(output, "Recieved interrupt: %d", regs.int_no);
-  logv(output);
   printf(output);
 }

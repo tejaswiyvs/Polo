@@ -13,7 +13,6 @@ void kernel_early(void)
 {
 	// disable interrupts.
 	asm volatile("cli");
-	load_gdt();
 }
 
 void kernel_main(void)
@@ -24,8 +23,8 @@ void kernel_main(void)
 	logv("Welcome to Polo! I'm a toy operating system. Right now, I don't do much, but I hope to be able to be a minimal OS shell when I grow up :)");
 
 	// Setup the GDT
-	// Interrupts will be disabled by load_gdt()
 	logv("Loading GDT");
+	load_gdt();
 	logv("Done loading GDT");
 
 	// Setup interrupts!
@@ -33,14 +32,20 @@ void kernel_main(void)
 	load_idt();
 	logv("Done loading IDT");
 
-	// Trigger some interrupts to ensure they're working
-	asm volatile ("xchgw %bx, %bx");
-	asm volatile ("int $0x3");
-	asm volatile ("int $0x4");
-	asm volatile ("xchgw %bx, %bx");
-
 	// init the terminal
 	logv("Initializing terminal");
 	terminal_initialize();
-	printf("Hello, World! Looks like I made it through the boot sequence alive!\n");
+
+	printf("********************************************************************************");
+	printf("*                                POLO                                          *");
+	printf("*                                ----                                          *");
+	printf("*                                                                              *");
+	printf("*      Welcome to Polo! I'm a hobby OS! I was built by Tejaswi Yerukalapudi    *");
+	printf("*                                                                              *");
+	printf("*                                                                              *");
+	printf("********************************************************************************");
+
+	shell();
+
+	while(1);
 }
