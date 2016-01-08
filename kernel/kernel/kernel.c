@@ -17,6 +17,8 @@ void kernel_early(void)
 	logv("Loading GDT");
 	load_gdt();
 	logv("Done loading GDT");
+
+	// Setup interrupts!
 	// load_idt();
 
 	// init the terminal

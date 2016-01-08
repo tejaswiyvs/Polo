@@ -1,3 +1,4 @@
 VRB	kernel/kernel.c	16	Welcome to Polo! I'm a toy operating system. Right now, I don't do much, but I hope to be able to be a minimal OS shell when I grow up :)
 VRB	kernel/kernel.c	17	Loading GDT
-000000000000000ffff00000000009acf0ffff000000000092cf0ffff0000000000facf0ffff0000000000f2cf0
+VRB	kernel/kernel.c	19	Done loading GDT
+VRB	kernel/kernel.c	25	Initializing terminal
