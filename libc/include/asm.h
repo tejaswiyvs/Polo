@@ -31,4 +31,14 @@ static inline void io_wait(void)
      /* TODO: Is there any reason why al is forced? */
 }
 
+static inline void enable_interrupts(void)
+{
+  asm volatile ("sti");
+}
+
+static inline void disable_interrupts(void)
+{
+  asm volatile("cli");
+}
+
 #endif

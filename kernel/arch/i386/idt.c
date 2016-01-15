@@ -1,31 +1,10 @@
-#include "../include/kernel/idt.h"
+#include <kernel/idt.h>
+#include <kernel/pic.h>
 #include <asm.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
 #include <log.h>
-
-#define PIC1		0x20		/* IO base address for master PIC */
-#define PIC2		0xA0		/* IO base address for slave PIC */
-#define PIC1_COMMAND	PIC1
-#define PIC1_DATA	(PIC1+1)
-#define PIC2_COMMAND	PIC2
-#define PIC2_DATA	(PIC2+1)
-#define PIC_EOI		0x20		/* End-of-interrupt command code */
-#define ICW1_ICW4	0x08		/* ICW4 (not) needed */
-#define ICW1_SINGLE	0x02		/* Single (cascade) mode */
-#define ICW1_INTERVAL4	0x04		/* Call address interval 4 (8) */
-#define ICW1_LEVEL	0x08		/* Level triggered (edge) mode */
-#define ICW1_INIT	0x10		/* Initialization - required! */
-
-#define ICW4_8086	0x08		/* 8086/88 (MCS-80/85) mode */
-#define ICW4_AUTO	0x02		/* Auto (normal) EOI */
-#define ICW4_BUF_SLAVE	0x08		/* Buffered mode/slave */
-#define ICW4_BUF_MASTER	0x0C		/* Buffered mode/master */
-#define ICW4_SFNM	0x10		/* Special fully nested (not) */
-
-#define PIC1_OFFSET 0x70
-#define PIC2_OFFSET 0x78
 
 struct IDTDescr {
   uint16_t base_lo; // The lower 16 bits of the address to jump to when this interrupt fires.
@@ -43,7 +22,7 @@ struct IDTPtr {
 typedef struct IDTDescr idt_entry_t;
 typedef struct IDTPtr idt_ptr_t;
 
-// Yikes! Address of each ISR. ISRs in assembly
+// Yikes! Software ISRs
 extern void isr0();
 extern void isr1();
 extern void isr2();
@@ -77,14 +56,37 @@ extern void isr29();
 extern void isr30();
 extern void isr31();
 
-extern void idt_flush();
+// Hardware IRQs
+extern void irq0();
+extern void irq1();
+extern void irq2();
+extern void irq3();
+extern void irq4();
+extern void irq5();
+extern void irq6();
+extern void irq7();
+extern void irq8();
+extern void irq9();
+extern void irq10();
+extern void irq11();
+extern void irq12();
+extern void irq13();
+extern void irq14();
+extern void irq15();
 
+// Loads the IDT
+extern void idt_flush(uint32_t);
+
+// Configures a single entry in the IDT table
 static void idt_set_gate(uint8_t, uint32_t, uint16_t, uint8_t);
 
 idt_entry_t idt_entries[256];
 idt_ptr_t idt_ptr;
 
 void load_idt() {
+  // Remap ze PICs
+  // setup_remap_pics();
+
   idt_ptr.limit = sizeof(idt_entry_t) * 256 - 1;
   idt_ptr.base = (uint32_t) &idt_entries;
 
@@ -125,6 +127,22 @@ void load_idt() {
   idt_set_gate(29, (uint32_t)isr29, 0x08, 0x8E);
   idt_set_gate(30, (uint32_t)isr30, 0x08, 0x8E);
   idt_set_gate(31, (uint32_t)isr31, 0x08, 0x8E);
+  /* idt_set_gate(32, (uint32_t)irq0, 0x08, 0x8E);
+  idt_set_gate(33, (uint32_t)irq1, 0x08, 0x8E);
+  idt_set_gate(34, (uint32_t)irq2, 0x08, 0x8E);
+  idt_set_gate(35, (uint32_t)irq3, 0x08, 0x8E);
+  idt_set_gate(36, (uint32_t)irq4, 0x08, 0x8E);
+  idt_set_gate(37, (uint32_t)irq5, 0x08, 0x8E);
+  idt_set_gate(38, (uint32_t)irq6, 0x08, 0x8E);
+  idt_set_gate(39, (uint32_t)irq7, 0x08, 0x8E);
+  idt_set_gate(40, (uint32_t)irq8, 0x08, 0x8E);
+  idt_set_gate(41, (uint32_t)irq9, 0x08, 0x8E);
+  idt_set_gate(42, (uint32_t)irq10, 0x08, 0x8E);
+  idt_set_gate(43, (uint32_t)irq11, 0x08, 0x8E);
+  idt_set_gate(44, (uint32_t)irq12, 0x08, 0x8E);
+  idt_set_gate(45, (uint32_t)irq13, 0x08, 0x8E);
+  idt_set_gate(46, (uint32_t)irq14, 0x08, 0x8E);
+  idt_set_gate(47, (uint32_t)irq15, 0x08, 0x8E); */
 
   idt_flush((uint32_t)&idt_ptr);
 }

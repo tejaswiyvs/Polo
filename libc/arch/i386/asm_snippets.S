@@ -8,6 +8,7 @@
 # invoke using gdt_flush(&gdtr_address);
 gdt_flush:
 	cli
+	xchgw %bx, %bx
 	mov 4(%esp), %eax
 	lgdt (%eax)
 
@@ -33,6 +34,7 @@ gdt_flush:
 		ret
 
 idt_flush:
+	xchgw %bx, %bx
 	mov 4(%esp), %eax
 	lidt (%eax)
 	ret

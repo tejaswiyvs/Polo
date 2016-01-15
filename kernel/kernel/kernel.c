@@ -17,23 +17,12 @@ void kernel_early(void)
 
 void kernel_main(void)
 {
+	load_gdt();
+	// do_test();
+	load_idt();
+
 	// init serial port for logging
 	init_serial();
-
-	logv("Welcome to Polo! I'm a toy operating system. Right now, I don't do much, but I hope to be able to be a minimal OS shell when I grow up :)");
-
-	// Setup the GDT
-	logv("Loading GDT");
-	load_gdt();
-	logv("Done loading GDT");
-
-	// Setup interrupts!
-	logv("Loading interrupts");
-	load_idt();
-	logv("Done loading IDT");
-
-	// init the terminal
-	logv("Initializing terminal");
 	terminal_initialize();
 
 	printf("********************************************************************************");
@@ -45,7 +34,14 @@ void kernel_main(void)
 	printf("*                                                                              *");
 	printf("********************************************************************************");
 
-	shell();
+	// Test an interrupt
+	asm volatile ("xchgw %bx, %bx");
+
+	// int i = 0;
+	// for (i = 0; i < 10; i++) {
+	asm volatile ("int $0x3");
+	// asm volatile ("int $0x3");
+	// }
 
 	while(1);
 }

@@ -29,6 +29,7 @@ LIBK_CPPFLAGS:=$(LIBK_CPPFLAGS) $(KERNEL_ARCH_CPPFLAGS)
 FREEOBJS:=\
 $(ARCH_FREEOBJS) \
 $(ARCHDIR)/asm_snippets.o \
+$(ARCHDIR)/interrupt_test.o \
 stdio/printf.o \
 stdio/sprintf.o \
 stdio/putchar.o \
