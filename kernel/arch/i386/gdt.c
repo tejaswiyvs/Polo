@@ -31,7 +31,7 @@ static void gdt_set_gate(int32_t, uint32_t, uint32_t, uint8_t, uint8_t);
 gdt_entry_t gdt_entries[3];
 gdt_ptr_t   gdt_ptr;
 
-void load_gdt() {
+void gdt_init() {
   gdt_ptr.limit = (sizeof(gdt_entry_t) * 3) - 1;
   gdt_ptr.base  = (uint32_t)&gdt_entries;
 

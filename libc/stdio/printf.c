@@ -58,6 +58,35 @@ int printf(const char* restrict format, ...)
 			const char* s = va_arg(parameters, const char*);
 			print(s, strlen(s));
 		}
+		else if ( *format == 'd')
+		{
+			format++;
+			int i = (int) va_arg(parameters, int);
+			if (i == 0) {
+				i += 48;
+				print(&i, 1);
+			}
+			else {
+				int j = i;
+				int num_digits = 1;
+				while (j != 0) {
+					j /= 10;
+					num_digits++;
+				}
+
+				int a[num_digits];
+				int count = 0;
+				while(i != 0) {
+					j = i % 10;
+					a[num_digits - count - 1] = j + 48;
+					i /= 10;
+					count++;
+				}
+				print(&a, num_digits);
+			}
+			// int d = (int) va_arg(parameters, int) + 48;
+			// print(&d, sizeof(d));
+		}
 		else
 		{
 			goto incomprehensible_conversion;

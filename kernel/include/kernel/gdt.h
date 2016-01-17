@@ -1,6 +1,6 @@
 #ifndef __gdt_h
 #define __gdt_h
 
-void load_gdt();
+void gdt_init();
 
 #endif

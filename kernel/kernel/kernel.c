@@ -4,10 +4,11 @@
 #include <stdio.h>
 #include <serial.h>
 #include <log.h>
-
+#include <kernel/keyboard.h>
 #include <kernel/tty.h>
-#include "../include/kernel/idt.h"
-#include "../include/kernel/gdt.h"
+#include <kernel/idt.h>
+#include <kernel/gdt.h>
+#include <kernel/ps2.h>
 
 void kernel_early(void)
 {
@@ -17,10 +18,6 @@ void kernel_early(void)
 
 void kernel_main(void)
 {
-	load_gdt();
-	// do_test();
-	load_idt();
-
 	// init serial port for logging
 	init_serial();
 	terminal_initialize();
@@ -28,20 +25,16 @@ void kernel_main(void)
 	printf("********************************************************************************");
 	printf("*                                POLO                                          *");
 	printf("*                                ----                                          *");
-	printf("*                                                                              *");
-	printf("*      Welcome to Polo! I'm a hobby OS! I was built by Tejaswi Yerukalapudi    *");
-	printf("*                                                                              *");
+	printf("*                   Welcome to Polo! I'm a hobby OS!                           *");
 	printf("*                                                                              *");
 	printf("********************************************************************************");
 
-	// Test an interrupt
-	asm volatile ("xchgw %bx, %bx");
+	gdt_init();
+	idt_init();
+	ps2_init();
+	keyboard_init();
 
-	// int i = 0;
-	// for (i = 0; i < 10; i++) {
-	asm volatile ("int $0x3");
-	// asm volatile ("int $0x3");
-	// }
-
-	while(1);
+	while(1) {
+		asm ("hlt");
+	}
 }

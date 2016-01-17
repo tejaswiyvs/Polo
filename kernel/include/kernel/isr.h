@@ -12,6 +12,6 @@ struct Registers {
 
 typedef struct Registers register_t;
 
-void isr_handler(register_t regs);
+void isr_irq_handler(register_t regs);
 
 #endif

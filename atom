@@ -1,0 +1,83 @@
+
+kernel/arch/i386/pic.o:     file format elf32-i386
+
+
+Disassembly of section .text:
+
+00000000 <setup_remap_pics>:
+   0:	53                   	push   %ebx
+   1:	66 87 db             	xchg   %bx,%bx
+   4:	ba 21 00 00 00       	mov    $0x21,%edx
+   9:	ec                   	in     (%dx),%al
+   a:	ba a1 00 00 00       	mov    $0xa1,%edx
+   f:	89 c3                	mov    %eax,%ebx
+  11:	ec                   	in     (%dx),%al
+  12:	ba 20 00 00 00       	mov    $0x20,%edx
+  17:	89 c1                	mov    %eax,%ecx
+  19:	b8 10 00 00 00       	mov    $0x10,%eax
+  1e:	ee                   	out    %al,(%dx)
+  1f:	31 c0                	xor    %eax,%eax
+  21:	e6 80                	out    %al,$0x80
+  23:	ba a0 00 00 00       	mov    $0xa0,%edx
+  28:	b8 10 00 00 00       	mov    $0x10,%eax
+  2d:	ee                   	out    %al,(%dx)
+  2e:	31 c0                	xor    %eax,%eax
+  30:	e6 80                	out    %al,$0x80
+  32:	ba 21 00 00 00       	mov    $0x21,%edx
+  37:	b8 20 00 00 00       	mov    $0x20,%eax
+  3c:	ee                   	out    %al,(%dx)
+  3d:	31 c0                	xor    %eax,%eax
+  3f:	e6 80                	out    %al,$0x80
+  41:	ba a1 00 00 00       	mov    $0xa1,%edx
+  46:	b8 28 00 00 00       	mov    $0x28,%eax
+  4b:	ee                   	out    %al,(%dx)
+  4c:	31 c0                	xor    %eax,%eax
+  4e:	e6 80                	out    %al,$0x80
+  50:	ba 21 00 00 00       	mov    $0x21,%edx
+  55:	b8 04 00 00 00       	mov    $0x4,%eax
+  5a:	ee                   	out    %al,(%dx)
+  5b:	31 c0                	xor    %eax,%eax
+  5d:	e6 80                	out    %al,$0x80
+  5f:	ba a1 00 00 00       	mov    $0xa1,%edx
+  64:	b8 02 00 00 00       	mov    $0x2,%eax
+  69:	ee                   	out    %al,(%dx)
+  6a:	31 c0                	xor    %eax,%eax
+  6c:	e6 80                	out    %al,$0x80
+  6e:	ba 21 00 00 00       	mov    $0x21,%edx
+  73:	b8 01 00 00 00       	mov    $0x1,%eax
+  78:	ee                   	out    %al,(%dx)
+  79:	31 c0                	xor    %eax,%eax
+  7b:	e6 80                	out    %al,$0x80
+  7d:	ba a1 00 00 00       	mov    $0xa1,%edx
+  82:	b8 01 00 00 00       	mov    $0x1,%eax
+  87:	ee                   	out    %al,(%dx)
+  88:	31 c0                	xor    %eax,%eax
+  8a:	e6 80                	out    %al,$0x80
+  8c:	ba 21 00 00 00       	mov    $0x21,%edx
+  91:	89 d8                	mov    %ebx,%eax
+  93:	ee                   	out    %al,(%dx)
+  94:	ba a1 00 00 00       	mov    $0xa1,%edx
+  99:	89 c8                	mov    %ecx,%eax
+  9b:	ee                   	out    %al,(%dx)
+  9c:	fb                   	sti    
+  9d:	ba 21 00 00 00       	mov    $0x21,%edx
+  a2:	b8 fd ff ff ff       	mov    $0xfffffffd,%eax
+  a7:	ee                   	out    %al,(%dx)
+  a8:	ba a1 00 00 00       	mov    $0xa1,%edx
+  ad:	b8 ff ff ff ff       	mov    $0xffffffff,%eax
+  b2:	ee                   	out    %al,(%dx)
+  b3:	5b                   	pop    %ebx
+  b4:	c3                   	ret    
+  b5:	8d 74 26 00          	lea    0x0(%esi,%eiz,1),%esi
+  b9:	8d bc 27 00 00 00 00 	lea    0x0(%edi,%eiz,1),%edi
+
+000000c0 <signal_eoi>:
+  c0:	80 7c 24 04 07       	cmpb   $0x7,0x4(%esp)
+  c5:	76 0b                	jbe    d2 <signal_eoi+0x12>
+  c7:	ba a0 00 00 00       	mov    $0xa0,%edx
+  cc:	b8 20 00 00 00       	mov    $0x20,%eax
+  d1:	ee                   	out    %al,(%dx)
+  d2:	ba 20 00 00 00       	mov    $0x20,%edx
+  d7:	b8 20 00 00 00       	mov    $0x20,%eax
+  dc:	ee                   	out    %al,(%dx)
+  dd:	c3                   	ret    

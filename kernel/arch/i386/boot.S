@@ -35,10 +35,8 @@ _start:
 	call kernel_main
 
 	# Hang if kernel_main unexpectedly returns.
-	# xchgw %bx, %bx
 	cli
 .Lhang:
-	# xchgw %bx, %bx
 	hlt
 	jmp .Lhang
 .size _start, . - _start

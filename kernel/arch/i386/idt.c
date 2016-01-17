@@ -83,10 +83,7 @@ static void idt_set_gate(uint8_t, uint32_t, uint16_t, uint8_t);
 idt_entry_t idt_entries[256];
 idt_ptr_t idt_ptr;
 
-void load_idt() {
-  // Remap ze PICs
-  // setup_remap_pics();
-
+void idt_init() {
   idt_ptr.limit = sizeof(idt_entry_t) * 256 - 1;
   idt_ptr.base = (uint32_t) &idt_entries;
 
@@ -127,7 +124,7 @@ void load_idt() {
   idt_set_gate(29, (uint32_t)isr29, 0x08, 0x8E);
   idt_set_gate(30, (uint32_t)isr30, 0x08, 0x8E);
   idt_set_gate(31, (uint32_t)isr31, 0x08, 0x8E);
-  /* idt_set_gate(32, (uint32_t)irq0, 0x08, 0x8E);
+  idt_set_gate(32, (uint32_t)irq0, 0x08, 0x8E);
   idt_set_gate(33, (uint32_t)irq1, 0x08, 0x8E);
   idt_set_gate(34, (uint32_t)irq2, 0x08, 0x8E);
   idt_set_gate(35, (uint32_t)irq3, 0x08, 0x8E);
@@ -142,9 +139,13 @@ void load_idt() {
   idt_set_gate(44, (uint32_t)irq12, 0x08, 0x8E);
   idt_set_gate(45, (uint32_t)irq13, 0x08, 0x8E);
   idt_set_gate(46, (uint32_t)irq14, 0x08, 0x8E);
-  idt_set_gate(47, (uint32_t)irq15, 0x08, 0x8E); */
+  idt_set_gate(47, (uint32_t)irq15, 0x08, 0x8E);
 
   idt_flush((uint32_t)&idt_ptr);
+
+  // Remap ze PICs
+  // Do this after IDT is setup I guess?
+  setup_remap_pics();
 }
 
 static void idt_set_gate(uint8_t num, uint32_t base, uint16_t selector, uint8_t flags)
