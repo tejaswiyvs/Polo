@@ -2,7 +2,7 @@
 #include <kernel/ps2.h>
 #include <kernel/isr.h>
 
-uint8_t keyboard_channel_id;
+uint8_t keyboard_port_id;
 
 void process();
 
@@ -29,9 +29,10 @@ static char scode[] =
 	0x0, '\0', '*', '\0', 0x0, '\0', ' ', '\0', 0x0, '\0', 0x0, '\0'
 };
 
-void keyboard_init(uint8_t channel_id)
+void keyboard_init(uint8_t port_id)
 {
-  keyboard_channel_id = channel_id;
+  keyboard_port_id = port_id;
+	dummy_read();
 	if (set_keyboard_scan_code_set(2, 3) != CMD_DONE) {
 		printf("Error initalizing keyboard.\n");
 		return;
@@ -53,10 +54,11 @@ uint8_t set_keyboard_scan_code_set(uint8_t scan_code_set, uint8_t retries)
 {
 	if (retries == 0) { return CMD_ERR; }
 
-	ps2_send_cmd(keyboard_channel_id, CMD_RW_SCAN_CODE_SET);
-	ps2_send_cmd(keyboard_channel_id, 2);
+	ps2_send_cmd(keyboard_port_id, CMD_RW_SCAN_CODE_SET);
+	ps2_send_cmd(keyboard_port_id, 2);
 	asm ("xchgw %bx, %bx");
 	uint8_t response = ps2_read_data();
+	printf("Response after setting scan code = %x", response);
 	if (response == PS2_RESEND) {
 		set_keyboard_scan_code_set(scan_code_set, retries - 1);
 	}
@@ -67,10 +69,9 @@ uint8_t set_keyboard_scan_code_set(uint8_t scan_code_set, uint8_t retries)
 		return CMD_DONE;
 	}
 
-	ps2_poll_in();
 	uint8_t new_set = ps2_read_data();
 	if (new_set != scan_code_set) {
-		printf("Something went wrong setting scan codes\n");
+		printf("Something went wrong setting scan codes\n. Current set = %x", new_set);
 	}
 
 	return CMD_ERR;

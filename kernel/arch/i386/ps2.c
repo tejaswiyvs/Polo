@@ -24,10 +24,10 @@
 
 #define RESPONSE_SELF_TEST_PASSED 0xAA
 
-static bool ps2_channel1_available = true;
-static bool ps2_channel2_available = true;
-static bool ps2_channel1_connected = false;
-static bool ps2_channel2_connected = false;
+static bool ps2_port1_available = true;
+static bool ps2_port2_available = true;
+static bool ps2_port1_connected = false;
+static bool ps2_port2_connected = false;
 
 typedef enum PS2DeviceType {
   Keyboard,
@@ -38,13 +38,13 @@ typedef enum PS2DeviceType {
 
 static void flush_ps2_controller();
 static bool configure_controller();
-static void enable_ps2_channels();
-static void disable_ps2_channels();
+static void enable_ps2_ports();
+static void disable_ps2_ports();
 static void reset_and_test_devices();
 static uint8_t get_configuration_byte();
 static void set_configuration_byte(uint8_t config_byte_value);
-static int reset_channel(uint8_t channel_id);
-static ps2_device_type_t init_and_get_device_type(uint8_t channel_id);
+static int reset_port(uint8_t port_id);
+static ps2_device_type_t init_and_get_device_type(uint8_t port_id, void (*ptr)(uint8_t));
 
 void ps2_init()
 {
@@ -53,7 +53,7 @@ void ps2_init()
   // We have to check if PS2 exists at all
   // but since we only care about bochs right now, it's okay to skip that bit.
 
-  disable_ps2_channels();
+  disable_ps2_ports();
   flush_ps2_controller();
 
   // Try to detect and configure the controller.
@@ -64,21 +64,19 @@ void ps2_init()
   reset_and_test_devices();
 }
 
-static void disable_ps2_channels()
+static void disable_ps2_ports()
 {
   outb(PS2_CMD, CMD_DISABLE_FIRST_PS2);
-
-  // This command will be ignored if the PS2 Controller is a single channel device
   outb(PS2_CMD, CMD_DISABLE_SECOND_PS2);
 }
 
-static void enable_ps2_channels()
+static void enable_ps2_ports()
 {
-  if (ps2_channel1_available) {
+  if (ps2_port1_available) {
     outb(PS2_CMD, CMD_ENABLE_FIRST_PS2);
   }
 
-  if (ps2_channel2_available) {
+  if (ps2_port2_available) {
     outb(PS2_CMD, CMD_ENABLE_SECOND_PS2);
   }
 }
@@ -86,7 +84,7 @@ static void enable_ps2_channels()
 // Reads from data buffer and discards data.
 static void flush_ps2_controller()
 {
-  inb(PS2_DATA);
+  dummy_read();
 }
 
 // Some controller configuration bytes can be invalid. Reconfigure with right
@@ -116,23 +114,23 @@ static bool configure_controller()
   outb(PS2_CMD, CMD_TEST_FIRST_PS2);
   uint8_t response = inb(PS2_DATA);
   if (response == 0) {
-    ps2_channel1_available = true;
+    ps2_port1_available = true;
   }
 
   outb(PS2_CMD, CMD_TEST_SECOND_PS2);
   response = inb(PS2_DATA);
   if (response == 0) {
-    ps2_channel2_available = true;
+    ps2_port2_available = true;
   }
 
-  if (!ps2_channel1_available && !ps2_channel2_available) {
+  if (!ps2_port1_available && !ps2_port2_available) {
     printf("No PS/2 Peripherals found\n");
     return false;
   }
 
-  enable_ps2_channels();
+  enable_ps2_ports();
 
-  printf("Detected %d channels available on PS2 controller\n", ps2_channel1_available + ps2_channel2_available);
+  printf("Detected %d ports available on PS2 controller\n", ps2_port1_available + ps2_port2_available);
   return true;
 }
 
@@ -140,16 +138,16 @@ static void reset_and_test_devices()
 {
   uint8_t configuration_byte = get_configuration_byte();
 
-  if (ps2_channel1_available) {
-    bool result = reset_channel(1);
-    ps2_channel1_connected = result;
+  if (ps2_port1_available) {
+    bool result = reset_port(1);
+    ps2_port1_connected = result;
     if (result) {
       configuration_byte |= 1;
     }
   }
-  if (ps2_channel2_available) {
-    bool result = reset_channel(2);
-    ps2_channel2_connected = result;
+  if (ps2_port2_available) {
+    bool result = reset_port(2);
+    ps2_port2_connected = result;
     if (result) {
       configuration_byte |= 0x2;
     }
@@ -158,21 +156,22 @@ static void reset_and_test_devices()
   set_configuration_byte(configuration_byte);
 }
 
-static int reset_channel(uint8_t channel_id)
+static int reset_port(uint8_t port_id)
 {
-  if (channel_id != 1 && channel_id != 2) { return false; }
-
-  if (channel_id == 1) {
-    ps2_send_p1(CMD_DEVICE_RESET);
+  if (port_id != 1 && port_id != 2) { return false; }
+  void (*ptr)(uint8_t cmd);
+  if(port_id == 1) {
+    ptr = &ps2_send_p1;
   }
-  if (channel_id == 2) {
-    ps2_send_p2(CMD_DEVICE_RESET);
+  else {
+    ptr = &ps2_send_p2;
   }
 
+  ptr(CMD_DEVICE_RESET);
   uint8_t data;
 
   if (ps2_poll_in() == 0) {
-    printf("No peripheral connected to PS/2 Port %d\n", channel_id);
+    printf("No peripheral connected to PS/2 Port %d\n", port_id);
   }
   else {
     data = inb(PS2_DATA);
@@ -181,14 +180,14 @@ static int reset_channel(uint8_t channel_id)
       if (ps2_poll_in() == 0) return false;
       uint8_t status = inb(PS2_DATA);
       if (status == RESPONSE_SELF_TEST_PASSED) {
-        printf("PS2: Port %d succesfully initialized\n", channel_id);
-        uint8_t device_type = init_and_get_device_type(channel_id);
+        printf("PS2: Port %d succesfully initialized\n", port_id);
+        uint8_t device_type = init_and_get_device_type(port_id, ptr);
         if (device_type == NotConnected) {
-          printf("There was an error initializing the PS2 Device Connected on channel: %d\n", channel_id);
+          printf("There was an error initializing the PS2 Device Connected on port: %d\n", port_id);
           return false;
         }
         else if (device_type == Keyboard) {
-          keyboard_init(channel_id);
+          keyboard_init(port_id);
           ptr(CMD_ENABLE_SCANNING);
           dummy_read();
           return true;
@@ -204,23 +203,15 @@ static int reset_channel(uint8_t channel_id)
       }
     }
     else {
-      printf("PS2: Port %d Reset failed. Device did not respond with an ACK\n", channel_id);
+      printf("PS2: Port %d Reset failed. Device did not respond with an ACK\n", port_id);
     }
   }
 
   return false;
 }
 
-static ps2_device_type_t init_and_get_device_type(uint8_t channel_id)
+static ps2_device_type_t init_and_get_device_type(uint8_t port_id, void (*ptr)(uint8_t))
 {
-  void (*ptr)(uint8_t cmd);
-  if(channel_id == 1) {
-    ptr = &ps2_send_p1;
-  }
-  else {
-    ptr = &ps2_send_p2;
-  }
-
   ptr(CMD_DISABLE_SCANNING);
   ps2_poll_in();
   uint8_t status = inb(PS2_DATA);
@@ -233,9 +224,9 @@ static ps2_device_type_t init_and_get_device_type(uint8_t channel_id)
     {
       // Device acknowledged the command, but timed out before
       // it responded. This might mean there's an old AT Keyboard connected
-      // if we're currently polling channel 1.
+      // if we're currently polling port 1.
       if (!ps2_poll_in()) {
-        if (channel_id == 1) {
+        if (port_id == 1) {
           printf("Detected Ancient AT Keyboard with translation enabled\n");
           return Keyboard;
         }
@@ -253,7 +244,7 @@ static ps2_device_type_t init_and_get_device_type(uint8_t channel_id)
 
       if (byte2 != 0) {
         if ((byte1 == 0xAB && byte2 == 0x41) || (byte1 == 0xAB && byte2 == 0xC1)) {
-          printf("Detected MF2 Keyboard with translation enabled connected to PS2: Channel %d\n", channel_id);
+          printf("Detected MF2 Keyboard with translation enabled connected to PS2: port %d\n", port_id);
           return Keyboard;
         }
         else if (byte1 == 0xAB && byte2 == 0x83) {
@@ -295,8 +286,8 @@ static void set_configuration_byte(uint8_t config_byte_value)
 
 uint8_t ps2_send_byte(uint8_t port_id, uint8_t byte)
 {
-  if (port_id == 1 && !ps2_channel1_available) { return 0; }
-  if (port_id == 2 && !ps2_channel2_available) { return 0; }
+  if (port_id == 1 && !ps2_port1_available) { return 0; }
+  if (port_id == 2 && !ps2_port2_available) { return 0; }
 
   return 0;
 }
@@ -304,7 +295,6 @@ uint8_t ps2_send_byte(uint8_t port_id, uint8_t byte)
 // Polls till the current op is complete by the PS2 controller
 void dummy_read()
 {
-  ps2_poll_in();
   inb(PS2_DATA);
   inb(PS2_DATA);
   inb(PS2_DATA);
@@ -337,31 +327,29 @@ int ps2_poll_out()
     return 0;
 }
 
-void ps2_send_cmd(uint8_t channel_id, uint8_t cmd)
+void ps2_send_cmd(uint8_t port_id, uint8_t cmd)
 {
-  if (channel_id != 1 && channel_id != 2) { return CMD_ERR; }
-  if (channel_id == 1 && !ps2_channel1_connected) { return CMD_ERR; }
-  if (channel_id == 2 && !ps2_channel2_connected) { return CMD_ERR; }
+  if (port_id != 1 && port_id != 2) { return CMD_ERR; }
+  if (port_id == 1 && !ps2_port1_connected) { return CMD_ERR; }
+  if (port_id == 2 && !ps2_port2_connected) { return CMD_ERR; }
 
-  if (channel_id == 1) {
+  if (port_id == 1) {
     ps2_send_p1(cmd);
   }
   else {
     ps2_send_p2(cmd);
   }
-  io_wait();
-  io_wait();
 }
 
 uint8_t ps2_read_data()
 {
   uint8_t response = 0;
   for (int i = 0; i < 0x5000000; i++) {
-    asm ("xchgw %bx, %bx");
+    asm volatile ("xchgw %bx, %bx");
     response = inb(PS2_DATA);
-    if (response != 0) break;
+    if (response != 0) return response;
   }
-  return response ? response : PS2_TIMEOUT;
+  return PS2_TIMEOUT;
 }
 
 void ps2_send_p1(uint8_t cmd)
