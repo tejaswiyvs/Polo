@@ -43,3 +43,62 @@ char *itoa(i)
   }
   return p;
 }
+
+void reverse(char s[])
+{
+    int i, j;
+    char c;
+
+    for (i = 0, j = strlen(s) - 1; i < j; i++, j--) {
+        c = s[i];
+        s[i] = s[j];
+        s[j] = c;
+    }
+}
+
+void itoau(unsigned int n, char s[])
+{
+    int i;
+
+    i = 0;
+    do {	   /* generate digits in reverse order */
+        s[i++] = n % 10 + '0';   /* get next digit */
+    } while ((n /= 10) > 0);	 /* delete it */
+    s[i] = '\0';
+    reverse(s);
+}
+void itoh(int n, char s[])
+{
+    int i;
+
+    i = 0;
+    do {	   /* generate digits in reverse order */
+        if (n % 16 < 10) {
+            s[i++] = n % 16 + '0';   /* get next digit */
+        } else {
+            s[i++] = n % 16 + '7';   /* get next digit */
+        }
+    } while ((n /= 16) > 0);	 /* delete it */
+    s[i] = '\0';
+    reverse(s);
+}
+int htoi(char s[])
+{
+    int i = 0;
+    int v = 0;
+    while (1 == 1) {
+        int n = s[i];
+        if (n < '0')
+            return v;
+        if (n > 'F')
+            return v;
+        if ((n > '9') && (n < 'A'))
+            return v;
+        v *= 16;
+        if (n < 'A')
+            v += n - '0';
+        if (n > '9')
+            v += n - '7';
+        i++;
+    }
+}

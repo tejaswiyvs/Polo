@@ -11,6 +11,9 @@ __attribute__((__noreturn__))
 void abort(void);
 char *itoa(int num);
 int atoi(const char *str);
+void itoau(unsigned int n, char s[]);
+void itoh(int n, char s[]);
+int htoi(char s[]);
 
 #ifdef __cplusplus
 }

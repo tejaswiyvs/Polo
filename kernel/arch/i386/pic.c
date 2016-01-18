@@ -33,7 +33,6 @@ static uint16_t pic_get_isr(void);
 
 void setup_remap_pics()
 {
-  asm volatile ("# xchgw %bx, %bx");
   uint8_t a1, a2;
 
   // Save existing masks
