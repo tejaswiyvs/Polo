@@ -11,7 +11,9 @@ struct Registers {
 } __attribute__((packed));
 
 typedef struct Registers register_t;
+typedef void (*isr_t)(registers_t);
 
+void register_interrupt_handler(uint8_t n, isr_t handler);
 void isr_irq_handler(register_t regs);
 
 #endif

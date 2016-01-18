@@ -33,7 +33,6 @@ void kernel_main(void)
 	idt_init();
 	ps2_init();
 
-	cpu_reset();
 	while(1) {
 		asm ("hlt");
 	}

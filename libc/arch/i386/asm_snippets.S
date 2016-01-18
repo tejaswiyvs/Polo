@@ -37,15 +37,3 @@ idt_flush:
 	mov 4(%esp), %eax
 	lidt (%eax)
 	ret
-
-cpu_reset:
-	# Wait for a empty Input Buffer
-	.wait1:
-		in   $0x64, %al
-		test $0x2, %al
-		jmp  .wait1
-
-	# Send 0xFE to the keyboard controller.
-	mov  $0xFE, %al
-	out  %al, $0x64
-	ret

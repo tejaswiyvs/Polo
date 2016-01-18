@@ -19,4 +19,5 @@ int printf(const char* restrict format, ...)
 	int n = vsprintf(output, format, ap);
 	va_end(ap);
 	print(output, strlen(output));
+	return n;
 }

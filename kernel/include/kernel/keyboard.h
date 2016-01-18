@@ -1,6 +1,8 @@
 #ifndef __keyboard_h
 #define __keyboard_h
 
-void keyboard_init();
+#include <stdint.h>
+
+void keyboard_init(uint8_t channel_id);
 
 #endif

@@ -92,7 +92,12 @@ isr_irq_common_stub:
 
     call isr_irq_handler
 
-    pop %eax                 # reload the original data segment descriptor
+    # This does not work because the structure value we passed earlier
+    # is being messed up by the compiler. It does not preserve the previous eax
+    # we pushed on to the stack
+    pop %eax
+    mov $0x10, %ax                 # reload the original data segment descriptor
+    # pop %eax
     mov %ax, %ds
     mov %ax, %es
     mov %ax, %fs
