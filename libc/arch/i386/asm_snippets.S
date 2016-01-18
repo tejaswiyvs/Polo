@@ -1,5 +1,6 @@
 .global gdt_flush
 .global idt_flush
+.global cpu_reset
 # The GDT is pointed to by a special register in the x86 chip, the GDTR register
 # The GDTR is 48 bits long.
 #   - Lower 16 bits = Size of the GDT (number of entries in the GDT)
@@ -35,4 +36,16 @@ gdt_flush:
 idt_flush:
 	mov 4(%esp), %eax
 	lidt (%eax)
+	ret
+
+cpu_reset:
+	# Wait for a empty Input Buffer
+	.wait1:
+		in   $0x64, %al
+		test $0x2, %al
+		jmp  .wait1
+
+	# Send 0xFE to the keyboard controller.
+	mov  $0xFE, %al
+	out  %al, $0x64
 	ret
