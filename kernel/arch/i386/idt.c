@@ -146,6 +146,8 @@ void idt_init() {
   // Remap ze PICs
   // Do this after IDT is setup I guess?
   setup_remap_pics();
+
+  printf("Interrupts are ready\n");
 }
 
 static void idt_set_gate(uint8_t num, uint32_t base, uint16_t selector, uint8_t flags)

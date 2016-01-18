@@ -27,6 +27,7 @@ void kernel_main(void)
 	printf("*                   Welcome to Polo! I'm a hobby OS!                           *");
 	printf("*                                                                              *");
 	printf("********************************************************************************");
+	printf("\n");
 
 	gdt_init();
 	idt_init();

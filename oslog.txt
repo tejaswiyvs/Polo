@@ -1,1 +1,21 @@
-VRB	arch/i386/isr.c	18	IRQ received!
+VRB	stdio/printf.c	21	********************************************************************************
+VRB	stdio/printf.c	21	*                                POLO                                          *
+VRB	stdio/printf.c	21	*                                ----                                          *
+VRB	stdio/printf.c	21	*                   Welcome to Polo! I'm a hobby OS!                           *
+VRB	stdio/printf.c	21	*                                                                              *
+VRB	stdio/printf.c	21	********************************************************************************
+VRB	stdio/printf.c	21	Test print int: 100, char: a, string: Hello, World!
+
+
+VRB	stdio/printf.c	21	PS2 Controller succesfully initialized
+
+VRB	stdio/printf.c	21	Detected 2 channels available on PS2 controller
+
+VRB	stdio/printf.c	21	PS2: Port 1 succesfully initialized
+
+VRB	stdio/printf.c	21	PS2: Port 1, DeviceType: aa
+
+VRB	stdio/printf.c	21	PS2: Port 2 succesfully initialized
+
+VRB	stdio/printf.c	21	PS2: Port 2, DeviceType: aa
+

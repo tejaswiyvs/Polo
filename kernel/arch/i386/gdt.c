@@ -44,6 +44,8 @@ void gdt_init() {
   // print_gdt();
 
   gdt_flush((uint32_t)&gdt_ptr);
+
+  printf("GDT Loaded.\n");
 }
 
 // static void print_gdt() {

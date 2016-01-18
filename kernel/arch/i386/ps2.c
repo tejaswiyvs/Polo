@@ -18,6 +18,11 @@
 #define CMD_DISABLE_SECOND_PS2      0xA7
 #define CMD_DEVICE_RESET          0xFF
 #define CMD_SEND_P2               0xD4
+#define CMD_IDENTIFY              0xF2
+#define CMD_DISABLE_SCANNING      0xF5
+
+#define RESPONSE_ACK              0xFA
+#define RESPONSE_SELF_TEST_PASSED 0xAA
 
 static bool ps2_channel1_available = true;
 static bool ps2_channel2_available = true;
@@ -33,6 +38,7 @@ static uint8_t get_configuration_byte();
 static void set_configuration_byte(uint8_t config_byte_value);
 static void dummy_read();
 static int reset_channel(uint8_t channel_id);
+static bool init_ps2_device(uint8_t channel_id);
 
 void ps2_init()
 {
@@ -130,12 +136,14 @@ static void reset_and_test_devices()
 
   if (ps2_channel1_available) {
     bool result = reset_channel(1);
+    ps2_channel1_connected = result;
     if (result) {
       configuration_byte |= 1;
     }
   }
   if (ps2_channel2_available) {
     bool result = reset_channel(2);
+    ps2_channel2_connected = result;
     if (result) {
       configuration_byte |= 0x2;
     }
@@ -156,7 +164,6 @@ static int reset_channel(uint8_t channel_id)
     ps2_send_p2(CMD_DEVICE_RESET);
   }
 
-  bool connected = false;
   uint8_t data;
 
   if (ps2_poll_in() == 0) {
@@ -164,25 +171,96 @@ static int reset_channel(uint8_t channel_id)
   }
   else {
     data = inb(PS2_DATA);
-    if (data == 0xFA) {
-      printf("PS2: Port %d succesfully initialized\n", channel_id);
-      ps2_poll_in();
-      printf("PS2: Port %d, DeviceType: %x\n", channel_id, inb(PS2_DATA));
+    if (data == RESPONSE_ACK) {
+      // The command to the PS2 device was acknowledge. Read the data for status
+      if (ps2_poll_in() == 0) return false;
+      uint8_t status = inb(PS2_DATA);
+      if (status == RESPONSE_SELF_TEST_PASSED) {
+        printf("PS2: Port %d succesfully initialized\n", channel_id);
+        if(init_ps2_device(channel_id)) {
+          return true;
+        }
+        else {
+          printf("There was an error initializing the PS2 Device Connected on channel: %d", channel_id);
+        }
+      }
+      else {
+        printf("PS2: Port %d self test failure; Device respoded with: %x", status);
+      }
     }
     else {
-      printf("PS2: Port %d Reset failed\n", channel_id);
-      connected = false;
+      printf("PS2: Port %d Reset failed. Device did not respond with an ACK\n", channel_id);
     }
   }
 
-  if (channel_id == 1) {
-    ps2_channel1_connected = connected;
+  return false;
+}
+
+static bool init_ps2_device(uint8_t channel_id)
+{
+  void (*ptr)(uint8_t cmd);
+  if(channel_id == 1) {
+    ptr = &ps2_send_p1;
   }
-  else if (channel_id == 2) {
-    ps2_channel2_connected = connected;
+  else {
+    ptr = &ps2_send_p2;
   }
 
-  return connected;
+  ptr(CMD_DISABLE_SCANNING);
+  ps2_poll_in();
+  uint8_t status = inb(PS2_DATA);
+  if (status == RESPONSE_ACK)
+  {
+    ptr(CMD_IDENTIFY);
+    if (!ps2_poll_in()) { return false; }
+    status = inb(PS2_DATA);
+    if (status == RESPONSE_ACK)
+    {
+      // Device acknowledged the command, but timed out before
+      // it responded. This might mean there's an old AT Keyboard connected
+      // if we're currently polling channel 1.
+      if (!ps2_poll_in()) {
+        if (channel_id == 1) {
+          printf("Detected Ancient AT Keyboard with translation enabled");
+          return true;
+        }
+        else {
+          return false;
+        }
+      }
+
+      // Device may return one or more bytes for status.
+      uint8_t byte1 = inb(PS2_DATA);
+      uint8_t byte2 = 0;
+      if (ps2_poll_in()) {
+        byte2 = inb(PS2_DATA);
+      }
+
+      printf("Device identify response: %x, %x", byte1, byte2);
+
+      if (byte2 != 0) {
+        if ((byte1 == 0xAB && byte2 == 0x41) || (byte1 == 0xAB && 0xC1)) {
+          printf("Detected MF2 Keyboard with translation enabled connected to PS2: Channel %d\n", channel_id);
+          return true;
+        }
+        if (byte1 == 0xAB && byte2 == 0x83) {
+          printf("Detected MF2 Keyboard.\n");
+          return true;
+        }
+      }
+      else {
+        if (byte1 == 0x00) {
+          printf("Detected PS/2 Mouse\n");
+        }
+        else if (byte1 == 0x03) {
+          printf("Detected PS/2 Mouse with scroll-wheel\n");
+        }
+        else if (byte1 == 0x04) {
+          printf("Detected 5 button Mouse.\n");
+        }
+      }
+    }
+  }
 }
 
 static uint8_t get_configuration_byte()
