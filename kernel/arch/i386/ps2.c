@@ -343,14 +343,15 @@ int ps2_poll_out()
 
 void ps2_send_p1(uint8_t cmd)
 {
-    ps2_poll_out();
+    if (!ps2_poll_out()) printf("Cmd: %x timed out.\n", cmd);
     outb(PS2_DATA, cmd);
 }
 
 void ps2_send_p2(uint8_t cmd)
 {
+    if (!ps2_poll_out()) printf("Cmd: %x timed out.\n", CMD_SEND_P2);
     outb(PS2_CMD, CMD_SEND_P2);
-    ps2_poll_out();
+    if (!ps2_poll_out()) printf("Cmd: %x timed out.\n", cmd);
     outb(PS2_DATA, cmd);
 }
 

@@ -80,6 +80,8 @@ void pic_send_eoi(uint8_t irq)
     outb(PIC2_COMMAND, PIC_EOI);
   }
 
+  printf("Sending EOI for IRQ: %d, EOI: %x, to CMD: %x\n", irq, PIC_EOI, PIC1_COMMAND);
+
   // Always signal PIC1 that an interrupt has been handled
   // because it's the PIC that forwards PIC2's irqs as well.
   outb(PIC1_COMMAND, PIC_EOI);

@@ -18,6 +18,7 @@ isr\int_no:
 .macro IRQ irq_no, isr_map # A macro for IRQs from the PIC
 .global irq\irq_no
 irq\irq_no:
+  xchgw %bx, %bx
   cli
   push $0 # Error code
   push $\isr_map # Interrupt number
@@ -80,24 +81,24 @@ IRQ 15, 47
 # mode segments, calls the C-level fault handler, and finally restores the stack
 # frame
 isr_irq_common_stub:
+
     pusha                    # Pushes edi,esi,ebp,esp,ebx,edx,ecx,eax
     mov %ds, %ax             # Lower 16-bits of eax = ds.
     push %eax                # save the data segment descriptor
 
     mov $0x10, %ax           # load the kernel data segment descriptor
-    mov %ax, %ds             # This stuff is just for the user mode.
-    mov %ax, %es
-    mov %ax, %fs
+    mov %ax, %ds             # Right now, we dont really have to do this
+    mov %ax, %es             # but after we enter the user mode, the segment
+    mov %ax, %fs             # registers will be different (0x18? and 0x20?)
     mov %ax, %gs
 
     call isr_irq_handler
 
     # This does not work because the structure value we passed earlier
     # is being messed up by the compiler. It does not preserve the previous eax
-    # we pushed on to the stack
+    # we pushed on to the stack.
     pop %eax
-    mov $0x10, %ax                 # reload the original data segment descriptor
-    # pop %eax
+    mov $0x10, %ax           # reload the original data segment descriptor
     mov %ax, %ds
     mov %ax, %es
     mov %ax, %fs
