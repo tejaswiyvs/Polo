@@ -4,17 +4,21 @@
 #include <string.h>
 #include <kernel/vga.h>
 #include <asm.h>
+#include <log.h>
 
 size_t terminal_row;
 size_t terminal_column;
 uint8_t terminal_color;
 uint16_t* terminal_buffer;
 
+static void wrap_around_if_needed();
+static void buffer_wrap_around();
+
 void terminal_initialize(void)
 {
 	terminal_row = 0;
 	terminal_column = 0;
-	terminal_color = make_color(COLOR_LIGHT_GREY, COLOR_BLACK);
+	terminal_color = make_color(COLOR_WHITE, COLOR_BLUE);
 	terminal_buffer = VGA_MEMORY;
 	for ( size_t y = 0; y < VGA_HEIGHT; y++ )
 	{
@@ -42,34 +46,49 @@ void terminal_putchar(char c)
 	if (c == '\n') {
 		terminal_row++;
 		terminal_column = 0;
-		terminal_set_cursor(terminal_row, terminal_column);
+		wrap_around_if_needed();
 		return;
 	}
-	if (c == '\t') {
-		terminal_putchar(' ');
-		terminal_putchar(' ');
-		terminal_putchar(' ');
-		terminal_putchar(' ');
-		terminal_putchar(' ');
-		return;
+	else {
+		terminal_putentryat(c, terminal_color, terminal_column, terminal_row);
+		terminal_column++;
+		wrap_around_if_needed();
 	}
+}
 
-	terminal_putentryat(c, terminal_color, terminal_column, terminal_row);
-	if (++terminal_column == VGA_WIDTH )
+static void wrap_around_if_needed()
+{
+	if (terminal_column == VGA_WIDTH)
 	{
 		terminal_column = 0;
-		if ( ++terminal_row == VGA_HEIGHT )
-		{
-			terminal_row = 0;
-		}
+		terminal_row++;
+	}
+
+	if (terminal_row == VGA_HEIGHT)
+	{
+		buffer_wrap_around();
+		terminal_row = VGA_HEIGHT - 1;
+		terminal_row = 0;
 	}
 
 	terminal_set_cursor(terminal_row, terminal_column);
 }
 
+static void buffer_wrap_around()
+{
+	uint16_t buffer_copy[VGA_WIDTH * VGA_HEIGHT];
+	// for (size_t row = 1; row < VGA_HEIGHT; row++) {
+	// 	for (size_t col = 0; col < VGA_WIDTH; col++) {
+	// 		buffer_copy[(row - 1) * VGA_HEIGHT + col] = terminal_buffer[row * VGA_WIDTH + col];
+	// 	}
+	// }
+	memcpy(buffer_copy, terminal_buffer[VGA_WIDTH], (VGA_WIDTH - 1) * VGA_HEIGHT * sizeof(uint16_t));
+	memcpy(terminal_buffer, buffer_copy, VGA_WIDTH * VGA_HEIGHT * sizeof(uint16_t));
+}
+
 void terminal_write(const char* data, size_t size)
 {
-	for ( size_t i = 0; i < size; i++ )
+	for (size_t i = 0; i < size; i++ )
 		terminal_putchar(data[i]);
 }
 

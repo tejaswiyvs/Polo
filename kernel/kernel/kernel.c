@@ -21,6 +21,10 @@ void kernel_main(void)
 	init_serial();
 	terminal_initialize();
 
+	for (size_t i = 0; i < 1000; i++) {
+		printf("Buffer wrap around test\n");
+	}
+
 	printf("********************************************************************************");
 	printf("*                                POLO                                          *");
 	printf("*                                ----                                          *");
@@ -28,6 +32,7 @@ void kernel_main(void)
 	printf("*                                                                              *");
 	printf("********************************************************************************");
 	printf("\n");
+
 
 	gdt_init();
 	idt_init();

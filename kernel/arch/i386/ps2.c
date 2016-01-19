@@ -36,7 +36,6 @@ typedef enum PS2DeviceType {
   NotConnected
 } ps2_device_type_t;
 
-static void flush_ps2_controller();
 static bool configure_controller();
 static void enable_ps2_ports();
 static void disable_ps2_ports();
@@ -45,7 +44,12 @@ static uint8_t get_configuration_byte();
 static void set_configuration_byte(uint8_t config_byte_value);
 static int reset_port(uint8_t port_id);
 static ps2_device_type_t init_and_get_device_type(uint8_t port_id, void (*ptr)(uint8_t));
+void ps2_send_p1(uint8_t cmd);
+void ps2_send_p2(uint8_t cmd);
+uint8_t ps2_read_p1();
+uint8_t ps2_read_p2();
 
+// Public API
 void ps2_init()
 {
   // TODO:
@@ -62,6 +66,41 @@ void ps2_init()
   }
 
   reset_and_test_devices();
+}
+
+void ps2_send_cmd(uint8_t port_id, uint8_t cmd)
+{
+  if (port_id != 1 && port_id != 2) { return CMD_ERR; }
+  if (port_id == 1 && !ps2_port1_connected) { return CMD_ERR; }
+  if (port_id == 2 && !ps2_port2_connected) { return CMD_ERR; }
+
+  if(!ps2_poll_out()) return PS2_TIMEOUT;
+
+  if (port_id == 1) {
+    ps2_send_p1(cmd);
+  }
+  else {
+    ps2_send_p2(cmd);
+  }
+}
+
+// Reads from data buffer and discards data.
+void flush_ps2_controller()
+{
+  inb(PS2_DATA);
+  inb(PS2_DATA);
+  inb(PS2_DATA);
+  inb(PS2_DATA);
+  inb(PS2_DATA);
+  inb(PS2_DATA);
+  inb(PS2_DATA);
+  inb(PS2_DATA);
+}
+
+uint8_t ps2_read_data()
+{
+  if (!ps2_poll_in()) return PS2_TIMEOUT;
+  return inb(PS2_DATA);
 }
 
 static void disable_ps2_ports()
@@ -81,11 +120,7 @@ static void enable_ps2_ports()
   }
 }
 
-// Reads from data buffer and discards data.
-static void flush_ps2_controller()
-{
-  dummy_read();
-}
+// Private methods
 
 // Some controller configuration bytes can be invalid. Reconfigure with right
 // Configuration.
@@ -140,14 +175,12 @@ static void reset_and_test_devices()
 
   if (ps2_port1_available) {
     bool result = reset_port(1);
-    ps2_port1_connected = result;
     if (result) {
       configuration_byte |= 1;
     }
   }
   if (ps2_port2_available) {
     bool result = reset_port(2);
-    ps2_port2_connected = result;
     if (result) {
       configuration_byte |= 0x2;
     }
@@ -187,19 +220,19 @@ static int reset_port(uint8_t port_id)
           return false;
         }
         else if (device_type == Keyboard) {
+          mark_connected(port_id);
           keyboard_init(port_id);
           ptr(CMD_ENABLE_SCANNING);
-          dummy_read();
           return true;
         }
         else if (device_type == Mouse) {
+          mark_connected(port_id);
           ptr(CMD_ENABLE_SCANNING);
-          dummy_read();
           return true;
         }
       }
       else {
-        printf("PS2: Port %d self test failure; Device respoded with: %x\n", status);
+        printf("PS2: Port %d self test failure; Device respoded with: %x\n", port_id, status);
       }
     }
     else {
@@ -248,7 +281,7 @@ static ps2_device_type_t init_and_get_device_type(uint8_t port_id, void (*ptr)(u
           return Keyboard;
         }
         else if (byte1 == 0xAB && byte2 == 0x83) {
-          printf("Detected MF2 Keyboard.\n");
+          printf("Detected MF2 Keyboard connceted to PS/2 Port %d\n", port_id);
           return Keyboard;
         }
       }
@@ -284,27 +317,7 @@ static void set_configuration_byte(uint8_t config_byte_value)
   outb(PS2_DATA, config_byte_value);
 }
 
-uint8_t ps2_send_byte(uint8_t port_id, uint8_t byte)
-{
-  if (port_id == 1 && !ps2_port1_available) { return 0; }
-  if (port_id == 2 && !ps2_port2_available) { return 0; }
-
-  return 0;
-}
-
-// Polls till the current op is complete by the PS2 controller
-void dummy_read()
-{
-  inb(PS2_DATA);
-  inb(PS2_DATA);
-  inb(PS2_DATA);
-  inb(PS2_DATA);
-  inb(PS2_DATA);
-  inb(PS2_DATA);
-  inb(PS2_DATA);
-  inb(PS2_DATA);
-}
-
+// Polls till it's safe to read from the PS2 controller's data buffer.
 int ps2_poll_in()
 {
     for (uint32_t i = 0; i < 0x5000000; i++) {
@@ -316,6 +329,7 @@ int ps2_poll_in()
     return 0;
 }
 
+// Polls till it's safe to write to the PS2 Data buffer.
 int ps2_poll_out()
 {
     for (uint32_t i = 0; i < 0x5000000; i++) {
@@ -325,31 +339,6 @@ int ps2_poll_out()
         }
     }
     return 0;
-}
-
-void ps2_send_cmd(uint8_t port_id, uint8_t cmd)
-{
-  if (port_id != 1 && port_id != 2) { return CMD_ERR; }
-  if (port_id == 1 && !ps2_port1_connected) { return CMD_ERR; }
-  if (port_id == 2 && !ps2_port2_connected) { return CMD_ERR; }
-
-  if (port_id == 1) {
-    ps2_send_p1(cmd);
-  }
-  else {
-    ps2_send_p2(cmd);
-  }
-}
-
-uint8_t ps2_read_data()
-{
-  uint8_t response = 0;
-  for (int i = 0; i < 0x5000000; i++) {
-    asm volatile ("xchgw %bx, %bx");
-    response = inb(PS2_DATA);
-    if (response != 0) return response;
-  }
-  return PS2_TIMEOUT;
 }
 
 void ps2_send_p1(uint8_t cmd)
@@ -363,4 +352,14 @@ void ps2_send_p2(uint8_t cmd)
     outb(PS2_CMD, CMD_SEND_P2);
     ps2_poll_out();
     outb(PS2_DATA, cmd);
+}
+
+void mark_connected(port_id)
+{
+  if (port_id == 1) {
+    ps2_port1_connected = true;
+  }
+  else {
+    ps2_port2_connected = true;
+  }
 }

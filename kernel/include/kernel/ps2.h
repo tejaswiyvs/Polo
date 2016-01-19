@@ -14,19 +14,8 @@ void ps2_init();
 
 int ps2_poll_in();
 int ps2_poll_out();
-int ps2_poll_data();
-
-void ps2_send_cmd(uint8_t channel_id, uint8_t cmd);
 uint8_t ps2_read_data();
-void ps2_send_p1(uint8_t cmd);
-void ps2_send_p2(uint8_t cmd);
-uint8_t ps2_read_p1();
-uint8_t ps2_read_p2();
-void dummy_read();
-/*
- * Sends a byte to the selected port. If there's a response, it will be retured.
- * If the operation is just to send and no response is expected, a 0 will be returned.
- */
-uint8_t ps2_send_byte(uint8_t port_id, uint8_t byte);
+void ps2_send_cmd(uint8_t channel_id, uint8_t cmd);
+void flush_ps2_controller();
 
 #endif
