@@ -83,6 +83,10 @@ static void buffer_wrap_around()
 	// 	}
 	// }
 	memcpy(buffer_copy, terminal_buffer[VGA_WIDTH], (VGA_WIDTH - 1) * VGA_HEIGHT * sizeof(uint16_t));
+	// Set the terminal color properly for the last row.
+	for (int i = VGA_WIDTH * (VGA_HEIGHT - 1); i < VGA_WIDTH * VGA_HEIGHT; i++) {
+		buffer_copy[i] = make_vgaentry(' ', terminal_color);
+	}
 	memcpy(terminal_buffer, buffer_copy, VGA_WIDTH * VGA_HEIGHT * sizeof(uint16_t));
 }
 
