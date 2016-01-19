@@ -70,6 +70,9 @@ char get_scan_code()
   uint8_t scan_code = 0;
 	if ((scan_code = ps2_read_data()) == PS2_TIMEOUT) return 0x0;
 	printf("Scan code: %x\n", scan_code);
+
+	// Check if keyboard is still enabled?
+	
 	return scan_code;
 }
 

@@ -37,6 +37,7 @@ void kernel_main(void)
 	gdt_init();
 	idt_init();
 	ps2_init();
+	timer_init();
 
 	while(1) {
 		asm ("hlt");

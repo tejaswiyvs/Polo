@@ -17,5 +17,8 @@ void isr_irq_handler(register_t regs)
   if (interrupt_handlers[regs.int_no]) {
     interrupt_handlers[regs.int_no]();
   }
+  if (regs.int_no >= 32 && regs.int_no <= 47) {
+    pic_send_eoi(regs.int_no - 32);
+  }
   return;
 }
