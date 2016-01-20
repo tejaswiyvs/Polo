@@ -8,6 +8,7 @@
 #include <kernel/idt.h>
 #include <kernel/gdt.h>
 #include <kernel/ps2.h>
+#include <kernel/keyboard.h>
 
 void kernel_early(void)
 {
@@ -36,6 +37,6 @@ void kernel_main(void)
 	timer_init();
 
 	while(1) {
-		asm ("hlt");
+		getchar();
 	}
 }
