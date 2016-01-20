@@ -18,7 +18,6 @@ isr\int_no:
 .macro IRQ irq_no, isr_map # A macro for IRQs from the PIC
 .global irq\irq_no
 irq\irq_no:
-  xchgw %bx, %bx
   cli
   push $0 # Error code
   push $\isr_map # Interrupt number

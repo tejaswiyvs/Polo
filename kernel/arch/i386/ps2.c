@@ -42,12 +42,13 @@ static void disable_ps2_ports();
 static void reset_and_test_devices();
 static uint8_t get_configuration_byte();
 static void set_configuration_byte(uint8_t config_byte_value);
-static int reset_port(uint8_t port_id);
-static ps2_device_type_t init_and_get_device_type(uint8_t port_id, void (*ptr)(uint8_t));
-void ps2_send_p1(uint8_t cmd);
-void ps2_send_p2(uint8_t cmd);
-uint8_t ps2_read_p1();
-uint8_t ps2_read_p2();
+static bool reset_port(uint8_t port_id);
+static ps2_device_type_t init_and_get_device_type(uint8_t port_id);
+static bool ps2_send_p1(uint8_t cmd);
+static bool ps2_send_p2(uint8_t cmd);
+static bool ps2_send_cmd_ack(uint8_t port_id, uint8_t cmd, uint8_t num_retries);
+static void flush_ps2_controller();
+static void mark_connected(port_id);
 
 // Public API
 void ps2_init()
@@ -68,7 +69,7 @@ void ps2_init()
   reset_and_test_devices();
 }
 
-void ps2_send_cmd(uint8_t port_id, uint8_t cmd)
+uint8_t ps2_send_cmd(uint8_t port_id, uint8_t cmd)
 {
   if (port_id != 1 && port_id != 2) { return CMD_ERR; }
   if (port_id == 1 && !ps2_port1_connected) { return CMD_ERR; }
@@ -76,16 +77,18 @@ void ps2_send_cmd(uint8_t port_id, uint8_t cmd)
 
   if(!ps2_poll_out()) return PS2_TIMEOUT;
 
-  if (port_id == 1) {
-    ps2_send_p1(cmd);
+  if (port_id == 1 && !ps2_send_p1(cmd)) {
+    return CMD_ERR;
   }
-  else {
-    ps2_send_p2(cmd);
+  else if (port_id == 2 && !ps2_send_p2(cmd)){
+    return CMD_ERR;
   }
+
+  return CMD_DONE;
 }
 
 // Reads from data buffer and discards data.
-void flush_ps2_controller()
+static void flush_ps2_controller()
 {
   inb(PS2_DATA);
   inb(PS2_DATA);
@@ -189,116 +192,78 @@ static void reset_and_test_devices()
   set_configuration_byte(configuration_byte);
 }
 
-static int reset_port(uint8_t port_id)
+static bool reset_port(uint8_t port_id)
 {
   if (port_id != 1 && port_id != 2) { return false; }
-  void (*ptr)(uint8_t cmd);
-  if(port_id == 1) {
-    ptr = &ps2_send_p1;
-  }
-  else {
-    ptr = &ps2_send_p2;
-  }
+  if (!ps2_send_cmd_ack(port_id, CMD_DEVICE_RESET, 3)) { return false; }
 
-  ptr(CMD_DEVICE_RESET);
-  uint8_t data;
-
-  if (ps2_poll_in() == 0) {
-    printf("No peripheral connected to PS/2 Port %d\n", port_id);
-  }
-  else {
-    data = inb(PS2_DATA);
-    if (data == PS2_ACK) {
-      // The command to the PS2 device was acknowledge. Read the data for status
-      if (ps2_poll_in() == 0) return false;
-      uint8_t status = inb(PS2_DATA);
-      if (status == RESPONSE_SELF_TEST_PASSED) {
-        printf("PS2: Port %d succesfully initialized\n", port_id);
-        uint8_t device_type = init_and_get_device_type(port_id, ptr);
-        if (device_type == NotConnected) {
-          printf("There was an error initializing the PS2 Device Connected on port: %d\n", port_id);
-          return false;
-        }
-        else if (device_type == Keyboard) {
-          mark_connected(port_id);
-          keyboard_init(port_id);
-          ptr(CMD_ENABLE_SCANNING);
-          return true;
-        }
-        else if (device_type == Mouse) {
-          mark_connected(port_id);
-          ptr(CMD_ENABLE_SCANNING);
-          return true;
-        }
-      }
-      else {
-        printf("PS2: Port %d self test failure; Device respoded with: %x\n", port_id, status);
-      }
+  uint8_t status = ps2_read_data();
+  if (status == RESPONSE_SELF_TEST_PASSED) {
+    printf("PS2: Port %d succesfully initialized\n", port_id);
+    uint8_t device_type = init_and_get_device_type(port_id);
+    if (device_type == NotConnected) {
+      printf("There was an error initializing the PS2 Device Connected on port: %d\n", port_id);
+      return false;
     }
-    else {
-      printf("PS2: Port %d Reset failed. Device did not respond with an ACK\n", port_id);
+    else if (device_type == Keyboard) {
+      mark_connected(port_id);
+      keyboard_init(port_id);
+      if (!ps2_send_cmd_ack(port_id, CMD_ENABLE_SCANNING, 3)) { return false; }
+      return true;
+    }
+    else if (device_type == Mouse) {
+      mark_connected(port_id);
+      if (!ps2_send_cmd_ack(port_id, CMD_ENABLE_SCANNING, 3)) { return false; }
+      return true;
     }
   }
 
   return false;
 }
 
-static ps2_device_type_t init_and_get_device_type(uint8_t port_id, void (*ptr)(uint8_t))
+static ps2_device_type_t init_and_get_device_type(uint8_t port_id)
 {
-  ptr(CMD_DISABLE_SCANNING);
-  ps2_poll_in();
-  uint8_t status = inb(PS2_DATA);
-  if (status == PS2_ACK)
-  {
-    ptr(CMD_IDENTIFY);
-    if (!ps2_poll_in()) { return NotConnected; }
-    status = inb(PS2_DATA);
-    if (status == PS2_ACK)
-    {
-      // Device acknowledged the command, but timed out before
-      // it responded. This might mean there's an old AT Keyboard connected
-      // if we're currently polling port 1.
-      if (!ps2_poll_in()) {
-        if (port_id == 1) {
-          printf("Detected Ancient AT Keyboard with translation enabled\n");
-          return Keyboard;
-        }
-        else {
-          return NotConnected;
-        }
-      }
+  if (!ps2_send_cmd_ack(port_id, CMD_DISABLE_SCANNING, 3)) { return NotConnected; }
+  if (!ps2_send_cmd_ack(port_id, CMD_IDENTIFY, 3)) { return NotConnected; }
 
-      // Device may return one or more bytes for status.
-      uint8_t byte1 = inb(PS2_DATA);
-      uint8_t byte2 = 0;
-      if (ps2_poll_in()) {
-        byte2 = inb(PS2_DATA);
-      }
+  // Device acknowledged the command, but timed out before
+  // it responded. This might mean there's an old AT Keyboard connected
+  // if we're currently polling port 1.
+  uint8_t byte1 = ps2_read_data();
+  if (byte1 == PS2_TIMEOUT) {
+    if (port_id == 1) {
+      printf("Detected Ancient AT Keyboard with translation enabled\n");
+      return Keyboard;
+    }
+    else {
+      return NotConnected;
+    }
+  }
 
-      if (byte2 != 0) {
-        if ((byte1 == 0xAB && byte2 == 0x41) || (byte1 == 0xAB && byte2 == 0xC1)) {
-          printf("Detected MF2 Keyboard with translation enabled connected to PS2: port %d\n", port_id);
-          return Keyboard;
-        }
-        else if (byte1 == 0xAB && byte2 == 0x83) {
-          printf("Detected MF2 Keyboard connceted to PS/2 Port %d\n", port_id);
-          return Keyboard;
-        }
-      }
-      else {
-        if (byte1 == 0x00) {
-          printf("Detected PS/2 Mouse\n");
-          return Mouse;
-        }
-        else if (byte1 == 0x03) {
-          printf("Detected PS/2 Mouse with scroll-wheel\n");
-          return Mouse;
-        }
-        else if (byte1 == 0x04) {
-          printf("Detected 5 button Mouse.\n");
-          return Mouse;
-        }
-      }
+  // Device may return one or more bytes for status.
+  uint8_t byte2 = ps2_read_data();
+  if (byte2 != PS2_TIMEOUT) {
+    if ((byte1 == 0xAB && byte2 == 0x41) || (byte1 == 0xAB && byte2 == 0xC1)) {
+      printf("Detected MF2 Keyboard with translation enabled connected to PS2: port %d\n", port_id);
+      return Keyboard;
+    }
+    else if (byte1 == 0xAB && byte2 == 0x83) {
+      printf("Detected MF2 Keyboard connceted to PS/2 Port %d\n", port_id);
+      return Keyboard;
+    }
+  }
+  else {
+    if (byte1 == 0x00) {
+      printf("Detected PS/2 Mouse\n");
+      return Mouse;
+    }
+    else if (byte1 == 0x03) {
+      printf("Detected PS/2 Mouse with scroll-wheel\n");
+      return Mouse;
+    }
+    else if (byte1 == 0x04) {
+      printf("Detected 5 button Mouse.\n");
+      return Mouse;
     }
   }
 
@@ -307,13 +272,17 @@ static ps2_device_type_t init_and_get_device_type(uint8_t port_id, void (*ptr)(u
 
 static uint8_t get_configuration_byte()
 {
+  ps2_poll_out();
   outb(PS2_CMD, CMD_READ_CONFIGURATION_BYTE);
+  ps2_poll_in();
   return inb(PS2_DATA);
 }
 
 static void set_configuration_byte(uint8_t config_byte_value)
 {
+  ps2_poll_out();
   outb(PS2_CMD, CMD_WRITE_CONFIGURATION_BYTE);
+  ps2_poll_out();
   outb(PS2_DATA, config_byte_value);
 }
 
@@ -341,21 +310,21 @@ int ps2_poll_out()
     return 0;
 }
 
-void ps2_send_p1(uint8_t cmd)
+static bool ps2_send_p1(uint8_t cmd)
 {
-    if (!ps2_poll_out()) printf("Cmd: %x timed out.\n", cmd);
+    if (!ps2_poll_out()) return false;
     outb(PS2_DATA, cmd);
 }
 
-void ps2_send_p2(uint8_t cmd)
+static bool ps2_send_p2(uint8_t cmd)
 {
-    if (!ps2_poll_out()) printf("Cmd: %x timed out.\n", CMD_SEND_P2);
+    if (!ps2_poll_out()) return false;
     outb(PS2_CMD, CMD_SEND_P2);
-    if (!ps2_poll_out()) printf("Cmd: %x timed out.\n", cmd);
+    if (!ps2_poll_out()) return false;
     outb(PS2_DATA, cmd);
 }
 
-void mark_connected(port_id)
+static void mark_connected(port_id)
 {
   if (port_id == 1) {
     ps2_port1_connected = true;
@@ -363,4 +332,33 @@ void mark_connected(port_id)
   else {
     ps2_port2_connected = true;
   }
+}
+
+/**
+ * Sends a command to the PS2 controller and expects an ACK.
+ * If an op times out, func returns false.
+ * If it recevies a PS2_TIMEOUT from the controller, we retry num_retries times.
+ */
+static bool ps2_send_cmd_ack(uint8_t port_id, uint8_t cmd, uint8_t num_retries)
+{
+  if (num_retries == 0 || (port_id != 0 && port_id != 1 && port_id != 2)) {
+    return false;
+  }
+
+  if (port_id == 0) {
+    if (!ps2_poll_out()) return false;
+    outb(PS2_CMD, cmd);
+  }
+  else if (port_id == 1 && !ps2_send_p1(cmd)) {
+    return false;
+  }
+  else if (port_id == 2 && !ps2_send_p2(cmd)) {
+    return false;
+  }
+
+  uint8_t data = 0;
+  if ((data = ps2_read_data()) == PS2_TIMEOUT) { return false; }
+  else if (data == PS2_RESEND) { ps2_send_cmd_ack(port_id, cmd, num_retries - 1); }
+  else if (data == PS2_ACK) return true;
+  return false;
 }

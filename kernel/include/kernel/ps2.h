@@ -15,7 +15,6 @@ void ps2_init();
 int ps2_poll_in();
 int ps2_poll_out();
 uint8_t ps2_read_data();
-void ps2_send_cmd(uint8_t channel_id, uint8_t cmd);
-void flush_ps2_controller();
+uint8_t ps2_send_cmd(uint8_t port_id, uint8_t cmd);
 
 #endif
