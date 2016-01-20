@@ -18,7 +18,6 @@ void process();
 void keyboard_int_handler(register_t regs);
 char get_scan_code();
 char get_char();
-bool set_keyboard_scan_code_set(uint8_t scan_code_set, uint8_t retries);
 
 static char scode[] =
 {
@@ -27,40 +26,18 @@ static char scode[] =
 
 void keyboard_init(uint8_t port_id)
 {
+	printf("Init keyboard\n");
   keyboard_port_id = port_id;
-	if (!set_keyboard_scan_code_set(2, 3)) {
-		printf("Error initalizing keyboard.\n");
-		return;
-	}
-	printf("Scan code set 2 done.\n");
+
+
+	ps2_send_cmd(keyboard_port_id, CMD_RW_SCAN_CODE_SET);
+	if (!ps2_send_cmd_ack(keyboard_port_id, 2, 3)) printf("Failed to set scan code set\n");
   register_interrupt_handler(33, &keyboard_int_handler);
 }
 
 void keyboard_int_handler(register_t regs)
 {
   get_scan_code();
-}
-
-bool set_keyboard_scan_code_set(uint8_t scan_code_set, uint8_t retries)
-{
-	if (retries == 0) { return false; }
-
-	ps2_send_cmd(keyboard_port_id, CMD_RW_SCAN_CODE_SET);
-	ps2_send_cmd(keyboard_port_id, 2);
-	uint8_t response;
-	if ((response = ps2_read_data()) == PS2_TIMEOUT) { return false; }
-
-	if (response == PS2_RESEND) {
-		set_keyboard_scan_code_set(scan_code_set, retries - 1);
-	}
-	else if (response == PS2_TIMEOUT) {
-		return false;
-	}
-	else if (response == PS2_ACK) {
-		return true;
-	}
-
-	return false;
 }
 
 char get_scan_code()

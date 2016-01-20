@@ -46,9 +46,9 @@ static bool reset_port(uint8_t port_id);
 static ps2_device_type_t init_and_get_device_type(uint8_t port_id);
 static bool ps2_send_p1(uint8_t cmd);
 static bool ps2_send_p2(uint8_t cmd);
-static bool ps2_send_cmd_ack(uint8_t port_id, uint8_t cmd, uint8_t num_retries);
 static void flush_ps2_controller();
 static void mark_connected(port_id);
+bool reset_device(uint8_t port_id, uint8_t num_retries);
 
 // Public API
 void ps2_init()
@@ -91,13 +91,6 @@ uint8_t ps2_send_cmd(uint8_t port_id, uint8_t cmd)
 static void flush_ps2_controller()
 {
   inb(PS2_DATA);
-  inb(PS2_DATA);
-  inb(PS2_DATA);
-  inb(PS2_DATA);
-  inb(PS2_DATA);
-  inb(PS2_DATA);
-  inb(PS2_DATA);
-  inb(PS2_DATA);
 }
 
 uint8_t ps2_read_data()
@@ -137,6 +130,7 @@ static bool configure_controller()
   config_byte &= ~(1 << 0);
   config_byte &= ~(1 << 1);
   config_byte &= ~(1 << 6);
+  printf("%x", config_byte);
   set_configuration_byte(config_byte);
 
   outb(PS2_CMD, CMD_TEST_PS2);
@@ -208,13 +202,19 @@ static bool reset_port(uint8_t port_id)
     else if (device_type == Keyboard) {
       mark_connected(port_id);
       keyboard_init(port_id);
-      if (!ps2_send_cmd_ack(port_id, CMD_ENABLE_SCANNING, 3)) { return false; }
+      if (!ps2_send_cmd_ack(port_id, CMD_ENABLE_SCANNING, 3)) printf("Failed to enable keyboard scanning. Keyboard might not work\n");
+
+      // Flushing because there's some lingering data in the data output buffer.
+      // Not sure why
+      // TODO
+      ps2_read_data();
       return true;
     }
     else if (device_type == Mouse) {
       mark_connected(port_id);
-      if (!ps2_send_cmd_ack(port_id, CMD_ENABLE_SCANNING, 3)) { return false; }
-      return true;
+      uint8_t r = ps2_send_cmd_ack(port_id, CMD_ENABLE_SCANNING, 3);
+      printf("response :%d", r);
+      return r;
     }
   }
 
@@ -287,7 +287,7 @@ static void set_configuration_byte(uint8_t config_byte_value)
 }
 
 // Polls till it's safe to read from the PS2 controller's data buffer.
-int ps2_poll_in()
+bool ps2_poll_in()
 {
     for (uint32_t i = 0; i < 0x5000000; i++) {
         uint8_t stat = inb(PS2_STATUS);
@@ -299,7 +299,7 @@ int ps2_poll_in()
 }
 
 // Polls till it's safe to write to the PS2 Data buffer.
-int ps2_poll_out()
+bool ps2_poll_out()
 {
     for (uint32_t i = 0; i < 0x5000000; i++) {
         uint8_t stat = inb(PS2_STATUS);
@@ -312,8 +312,8 @@ int ps2_poll_out()
 
 static bool ps2_send_p1(uint8_t cmd)
 {
-    if (!ps2_poll_out()) return false;
-    outb(PS2_DATA, cmd);
+  if (!ps2_poll_out()) { printf("bad stuff happened\n"); return false; }
+  outb(PS2_DATA, cmd);
 }
 
 static bool ps2_send_p2(uint8_t cmd)
@@ -339,7 +339,7 @@ static void mark_connected(port_id)
  * If an op times out, func returns false.
  * If it recevies a PS2_TIMEOUT from the controller, we retry num_retries times.
  */
-static bool ps2_send_cmd_ack(uint8_t port_id, uint8_t cmd, uint8_t num_retries)
+bool ps2_send_cmd_ack(uint8_t port_id, uint8_t cmd, uint8_t num_retries)
 {
   if (num_retries == 0 || (port_id != 0 && port_id != 1 && port_id != 2)) {
     return false;
@@ -350,15 +350,46 @@ static bool ps2_send_cmd_ack(uint8_t port_id, uint8_t cmd, uint8_t num_retries)
     outb(PS2_CMD, cmd);
   }
   else if (port_id == 1 && !ps2_send_p1(cmd)) {
+    printf("Failed to send cmd to p1 port_id: %d, cmd: %x, num_retries: %d\n", port_id, cmd, num_retries);
     return false;
   }
   else if (port_id == 2 && !ps2_send_p2(cmd)) {
+    printf("Failed to send cmd to p2 port_id: %d, cmd: %x, num_retries: %d\n", port_id, cmd, num_retries);
     return false;
   }
 
   uint8_t data = 0;
-  if ((data = ps2_read_data()) == PS2_TIMEOUT) { return false; }
+  if ((data = ps2_read_data()) == PS2_TIMEOUT) { printf("Timed out trying to read ACK\n"); return false; }
   else if (data == PS2_RESEND) { ps2_send_cmd_ack(port_id, cmd, num_retries - 1); }
   else if (data == PS2_ACK) return true;
+  return false;
+}
+
+bool reset_device(uint8_t port_id, uint8_t num_retries)
+{
+  if (num_retries == 0) return false;
+  uint8_t response = 0;
+  if (port_id == 1 && ps2_send_p1(CMD_DEVICE_RESET)) {
+    response = ps2_read_data();
+  }
+  if (port_id == 2 && ps2_send_p2(CMD_DEVICE_RESET)) {
+    response = ps2_read_data();
+  }
+  else {
+    return false;
+  }
+
+  if (response == PS2_RESEND) {
+    reset_device(port_id, num_retries - 1);
+  }
+  else if (response == PS2_ACK) {
+    response = ps2_read_data();
+    return true;
+  }
+  else if (response == 0xAA) {
+    response = ps2_read_data();
+    if (response == PS2_ACK) { return true; }
+  }
+
   return false;
 }

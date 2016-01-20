@@ -2,6 +2,7 @@
 #define __ps2_h
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #define CMD_ERR     0
 #define CMD_DONE    1
@@ -12,9 +13,10 @@
 
 void ps2_init();
 
-int ps2_poll_in();
-int ps2_poll_out();
+bool ps2_poll_in();
+bool ps2_poll_out();
 uint8_t ps2_read_data();
 uint8_t ps2_send_cmd(uint8_t port_id, uint8_t cmd);
+bool ps2_send_cmd_ack(uint8_t port_id, uint8_t cmd, uint8_t num_retries);
 
 #endif
