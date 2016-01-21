@@ -13,7 +13,7 @@ void register_interrupt_handler(uint8_t n, isr_t handler)
 
 void isr_irq_handler(register_t regs)
 {
-  printf("Received ISR/IRQ: %d\n", regs.int_no);
+  // printf("Received ISR/IRQ: %d\n", regs.int_no);
 
   if (interrupt_handlers[regs.int_no]) {
     interrupt_handlers[regs.int_no]();
@@ -22,6 +22,6 @@ void isr_irq_handler(register_t regs)
   if (regs.int_no >= 32 && regs.int_no <= 47) {
     pic_send_eoi(regs.int_no - 32);
   }
-  
+
   return;
 }

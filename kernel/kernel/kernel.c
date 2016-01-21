@@ -30,6 +30,9 @@ void kernel_main(void)
 	printf("********************************************************************************");
 	printf("\n");
 
+	uint8_t hex_value = 0xAA;
+	printf("test hex printing: %X", hex_value);
+
 
 	gdt_init();
 	idt_init();
@@ -37,6 +40,9 @@ void kernel_main(void)
 	timer_init();
 
 	while(1) {
-		getchar();
+		asm ("hlt");
 	}
+	// while(1) {
+	// 	putchar(getchar());
+	// }
 }

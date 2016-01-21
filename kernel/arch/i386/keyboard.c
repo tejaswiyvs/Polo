@@ -2,6 +2,8 @@
 #include <kernel/ps2.h>
 #include <kernel/isr.h>
 #include <stdbool.h>
+#include <stdio.h>
+#include <asm.h>
 
 uint8_t keyboard_port_id;
 
@@ -24,44 +26,47 @@ void empty_keyboard_buffer();
 char keyboard_buffer[KBD_BUFFER_SIZE];
 int keyboard_buffer_idx = 0;
 
+// unsigned char scan_codes_kbd_us[128] =
+// {
+//   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '\t', '`', 0,
+//   0, 0, 0, 0, 0, 'q', '1', 0, 0, 'z', 's', 'a', 'w', '2', 0,
+//   0, 'c', 'x', 'd', 'e', '4', '3', 0, 0, ' ', 'v', 'f', 't', 'r', '5', 0,
+//   0, 'n', 'b', 'h', 'g', 'y', '6', 0, 0, 0, 'm', 'j', 'u', '7', '8', 0
+// };
+
 unsigned char scan_codes_kbd_us[128] =
 {
-    0,  27, '1', '2', '3', '4', '5', '6', '7', '8',	/* 9 */
-  '9', '0', '-', '=', '\b',	/* Backspace */
-  '\t',			/* Tab */
-  'q', 'w', 'e', 'r',	/* 19 */
-  't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\n',	/* Enter key */
-    0,			/* 29   - Control */
-  'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';',	/* 39 */
- '\'', '`',   0,		/* Left shift */
- '\\', 'z', 'x', 'c', 'v', 'b', 'n',			/* 49 */
-  'm', ',', '.', '/',   0,				/* Right shift */
-  '*',
-    0,	/* Alt */
-  ' ',	/* Space bar */
-    0,	/* Caps lock */
-    0,	/* 59 - F1 key ... > */
-    0,   0,   0,   0,   0,   0,   0,   0,
-    0,	/* < ... F10 */
-    0,	/* 69 - Num lock*/
-    0,	/* Scroll Lock */
-    0,	/* Home key */
-    0,	/* Up Arrow */
-    0,	/* Page Up */
-  '-',
-    0,	/* Left Arrow */
-    0,
-    0,	/* Right Arrow */
-  '+',
-    0,	/* 79 - End key*/
-    0,	/* Down Arrow */
-    0,	/* Page Down */
-    0,	/* Insert Key */
-    0,	/* Delete Key */
-    0,   0,   0,
-    0,	/* F11 Key */
-    0,	/* F12 Key */
-    0,	/* All other keys are undefined */
+  0, 0, 0, 0,
+  0, 0, 0, 0,
+  0, 0, 0, 0,
+  0, '\t', '`', 0,
+  0, 0, 0, 0,
+  0, 'q', '1', 0,
+  0, 0, 'z', 's',
+  'a', 'w', '2', 0,
+  0, 'c', 'x', 'd',
+  'e', '4', '3', 0,
+  0, ' ', 'v', 'f',
+  't', 'r', '5', 0,
+  0, 'n', 'b', 'h',
+  'g', 'y', '6', 0,
+  0, 0, 'm', 'j',
+  'u', '7', '8', 0,
+  0, ',', 'k', 'i',
+  'o', '0', '9', 0,
+  0, '.', '/', 'l',
+  ';', 'p', '-', 0,
+  '[', '=', 0, 0,
+  0, 0, 0, ']',
+  0, '\\', 0, 0,
+  0, 0, 0, 0,
+  0, '1', 0, '4',
+  '7', 0, 0, 0,
+  '0', '.', '2', '5',
+  '6', '8', 0, 0,
+  0, '+', '3', '-',
+  '*', '9', 0, 0,
+  0, 0, 0, 0
 };
 
 void keyboard_init(uint8_t port_id)
@@ -72,38 +77,30 @@ void keyboard_init(uint8_t port_id)
 	// Setup scan code set 2.
 	ps2_send_cmd(keyboard_port_id, CMD_RW_SCAN_CODE_SET);
 	if (!ps2_send_cmd_ack(keyboard_port_id, 2, 3)) printf("Failed to set scan code set\n");
+  ps2_poll_data();
   register_interrupt_handler(33, &keyboard_int_handler);
 }
 
 void keyboard_int_handler(register_t regs)
 {
-  get_scan_code();
+  putchar(getchar());
 }
 
 char get_scan_code()
 {
-	uint8_t scan_code = ps2_read_data();
-	if (scan_code == PS2_TIMEOUT) return;
-
-	if (scan_code & 0x80) {
-		// Key was released
-		// Ignore this for now.
-	}
-
-	if (keyboard_buffer_idx == (KBD_BUFFER_SIZE - 1)) {
-		empty_keyboard_buffer();
-	}
-
-	keyboard_buffer[keyboard_buffer_idx] = scan_codes_kbd_us[scan_code];
-	return;
+  char c = 0;
+  do {
+    if(ps2_read_data() != c) {
+      c = ps2_read_data();
+      if(c > 0) return c;
+    }
+  } while(1);
+  return;
 }
 
 char getchar()
 {
-	while(keyboard_buffer_idx == 0);
-	char ch = keyboard_buffer[keyboard_buffer_idx];
-	keyboard_buffer_idx--;
-	return ch;
+  return scan_codes_kbd_us[get_scan_code()];
 }
 
 void empty_keyboard_buffer()

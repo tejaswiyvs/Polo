@@ -93,9 +93,14 @@ static void flush_ps2_controller()
   inb(PS2_DATA);
 }
 
-uint8_t ps2_read_data()
+uint8_t ps2_poll_data()
 {
   if (!ps2_poll_in()) return PS2_TIMEOUT;
+  return ps2_read_data();
+}
+
+uint8_t ps2_read_data()
+{
   return inb(PS2_DATA);
 }
 
@@ -191,7 +196,7 @@ static bool reset_port(uint8_t port_id)
   if (port_id != 1 && port_id != 2) { return false; }
   if (!ps2_send_cmd_ack(port_id, CMD_DEVICE_RESET, 3)) { return false; }
 
-  uint8_t status = ps2_read_data();
+  uint8_t status = ps2_poll_data();
   if (status == RESPONSE_SELF_TEST_PASSED) {
     printf("PS2: Port %d succesfully initialized\n", port_id);
     uint8_t device_type = init_and_get_device_type(port_id);
@@ -207,7 +212,7 @@ static bool reset_port(uint8_t port_id)
       // Flushing because there's some lingering data in the data output buffer.
       // Not sure why
       // TODO
-      ps2_read_data();
+      ps2_poll_data();
       return true;
     }
     else if (device_type == Mouse) {
@@ -229,7 +234,7 @@ static ps2_device_type_t init_and_get_device_type(uint8_t port_id)
   // Device acknowledged the command, but timed out before
   // it responded. This might mean there's an old AT Keyboard connected
   // if we're currently polling port 1.
-  uint8_t byte1 = ps2_read_data();
+  uint8_t byte1 = ps2_poll_data();
   if (byte1 == PS2_TIMEOUT) {
     if (port_id == 1) {
       printf("Detected Ancient AT Keyboard with translation enabled\n");
@@ -241,7 +246,7 @@ static ps2_device_type_t init_and_get_device_type(uint8_t port_id)
   }
 
   // Device may return one or more bytes for status.
-  uint8_t byte2 = ps2_read_data();
+  uint8_t byte2 = ps2_poll_data();
   if (byte2 != PS2_TIMEOUT) {
     if ((byte1 == 0xAB && byte2 == 0x41) || (byte1 == 0xAB && byte2 == 0xC1)) {
       printf("Detected MF2 Keyboard with translation enabled connected to PS2: port %d\n", port_id);
@@ -359,7 +364,7 @@ bool ps2_send_cmd_ack(uint8_t port_id, uint8_t cmd, uint8_t num_retries)
   }
 
   uint8_t data = 0;
-  if ((data = ps2_read_data()) == PS2_TIMEOUT) { printf("Timed out trying to read ACK\n"); return false; }
+  if ((data = ps2_poll_data()) == PS2_TIMEOUT) { printf("Timed out trying to read ACK\n"); return false; }
   else if (data == PS2_RESEND) { ps2_send_cmd_ack(port_id, cmd, num_retries - 1); }
   else if (data == PS2_ACK) return true;
   return false;
@@ -370,10 +375,10 @@ bool reset_device(uint8_t port_id, uint8_t num_retries)
   if (num_retries == 0) return false;
   uint8_t response = 0;
   if (port_id == 1 && ps2_send_p1(CMD_DEVICE_RESET)) {
-    response = ps2_read_data();
+    response = ps2_poll_data();
   }
   if (port_id == 2 && ps2_send_p2(CMD_DEVICE_RESET)) {
-    response = ps2_read_data();
+    response = ps2_poll_data();
   }
   else {
     return false;
@@ -383,11 +388,11 @@ bool reset_device(uint8_t port_id, uint8_t num_retries)
     reset_device(port_id, num_retries - 1);
   }
   else if (response == PS2_ACK) {
-    response = ps2_read_data();
+    response = ps2_poll_data();
     return true;
   }
   else if (response == 0xAA) {
-    response = ps2_read_data();
+    response = ps2_poll_data();
     if (response == PS2_ACK) { return true; }
   }
 

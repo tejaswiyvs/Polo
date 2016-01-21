@@ -1,6 +1,6 @@
 00000000000i[      ] Bochs x86 Emulator 2.6.8
 00000000000i[      ]   Built from SVN snapshot on May 3, 2015
-00000000000i[      ] Compiled on Jan  5 2016 at 15:12:53
+00000000000i[      ] Compiled on Jan  5 2016 at 16:58:09
 00000000000i[      ] System configuration
 00000000000i[      ]   processors: 1 (cores=1, HT threads=1)
 00000000000i[      ]   A20 line support: yes
@@ -33,7 +33,7 @@
 00000000000i[      ]   SB16 support: no
 00000000000i[      ]   USB support: no
 00000000000i[      ]   VGA extension support: vbe
-00000000000i[MEM0  ] allocated memory at 0x7f1a1d756010. after alignment, vector=0x7f1a1d757000
+00000000000i[MEM0  ] allocated memory at 0x7fe4fa43d010. after alignment, vector=0x7fe4fa43e000
 00000000000i[MEM0  ] 32.00MB
 00000000000i[MEM0  ] mem block size = 0x00100000, blocks=32
 00000000000i[MEM0  ] rom at 0xfffe0000/131072 ('/usr/share/bochs/BIOS-bochs-latest')
@@ -43,7 +43,7 @@
 00000000000i[DEV   ] PIIX3 PCI-to-ISA bridge present at device 1, function 0
 00000000000i[PLUGIN] init_dev of 'cmos' plugin device by virtual method
 00000000000i[CMOS  ] Using local time for initial clock
-00000000000i[CMOS  ] Setting initial clock to: Wed Jan 20 16:51:18 2016 (time0=1453326678)
+00000000000i[CMOS  ] Setting initial clock to: Wed Jan 20 22:13:35 2016 (time0=1453346015)
 00000000000i[PLUGIN] init_dev of 'dma' plugin device by virtual method
 00000000000i[DMA   ] channel 4 used by cascade
 00000000000i[PLUGIN] init_dev of 'pic' plugin device by virtual method
@@ -72,7 +72,7 @@
 00000000000i[CD1   ] load cdrom with path='polo.iso'
 00000000000i[CD1   ] Opening image file as a cd.
 00000000000i[HD    ] Media present in CD-ROM drive
-00000000000i[HD    ] Capacity is 2504 sectors (4.89 MB)
+00000000000i[HD    ] Capacity is 2509 sectors (4.90 MB)
 00000000000i[HD    ] Using boot sequence cdrom, none, none
 00000000000i[HD    ] Floppy boot signature check is enabled
 00000000000i[PLUGIN] init_dev of 'pci_ide' plugin device by virtual method
@@ -139,108 +139,74 @@
 00000000000i[PLUGIN] reset of 'serial' plugin device by virtual method
 00000000000i[PLUGIN] reset of 'iodebug' plugin device by virtual method
 00000000000i[      ] set SIGINT handler to bx_debug_ctrlc_handler
-00000003305i[BIOS  ] $Revision: 1.257 $ $Date: 2011/01/26 09:52:02 $
-00000317061i[KBD   ] reset-disable command received
-00000445257i[VBIOS ] VGABios $Id: vgabios.c,v 1.75 2011/10/15 14:07:21 vruppert Exp $
-00000445328i[BXVGA ] VBE known Display Interface b0c0
-00000445360i[BXVGA ] VBE known Display Interface b0c5
-00000448285i[VBIOS ] VBE Bios $Id: vbe.c,v 1.64 2011/07/19 18:25:05 vruppert Exp $
-00000768401i[BIOS  ] Starting rombios32
-00000768839i[BIOS  ] Shutdown flag 0
-00000769423i[BIOS  ] ram_size=0x02000000
-00000769844i[BIOS  ] ram_end=32MB
-00000781891i[BIOS  ] Found 1 cpu(s)
-00000797739i[BIOS  ] bios_table_addr: 0x000fb928 end=0x000fcc00
-00001125530i[PCI   ] i440FX PMC write to PAM register 59 (TLB Flush)
-00001453458i[P2ISA ] PCI IRQ routing: PIRQA# set to 0x0b
-00001453477i[P2ISA ] PCI IRQ routing: PIRQB# set to 0x09
-00001453496i[P2ISA ] PCI IRQ routing: PIRQC# set to 0x0b
-00001453515i[P2ISA ] PCI IRQ routing: PIRQD# set to 0x09
-00001453525i[P2ISA ] write: ELCR2 = 0x0a
-00001454296i[BIOS  ] PIIX3/PIIX4 init: elcr=00 0a
-00001461968i[BIOS  ] PCI: bus=0 devfn=0x00: vendor_id=0x8086 device_id=0x1237 class=0x0600
-00001464243i[BIOS  ] PCI: bus=0 devfn=0x08: vendor_id=0x8086 device_id=0x7000 class=0x0601
-00001466357i[BIOS  ] PCI: bus=0 devfn=0x09: vendor_id=0x8086 device_id=0x7010 class=0x0101
-00001466581i[PIDE  ] new BM-DMA address: 0xc000
-00001467196i[BIOS  ] region 4: 0x0000c000
-00001469223i[BIOS  ] PCI: bus=0 devfn=0x0b: vendor_id=0x8086 device_id=0x7113 class=0x0680
-00001469452i[ACPI  ] new irq line = 11
-00001469464i[ACPI  ] new irq line = 9
-00001469489i[ACPI  ] new PM base address: 0xb000
-00001469503i[ACPI  ] new SM base address: 0xb100
-00001469531i[PCI   ] setting SMRAM control register to 0x4a
-00001633624i[CPU0  ] Enter to System Management Mode
-00001633624i[CPU0  ] enter_system_management_mode: temporary disable VMX while in SMM mode
-00001633634i[CPU0  ] RSM: Resuming from System Management Mode
-00001797655i[PCI   ] setting SMRAM control register to 0x0a
-00001806405i[BIOS  ] MP table addr=0x000fba00 MPC table addr=0x000fb930 size=0xd0
-00001808219i[BIOS  ] SMBIOS table addr=0x000fba10
-00001811374i[BIOS  ] Firmware waking vector 0x1ff00cc
-00001816298i[BIOS  ] ACPI tables: RSDP addr=0x000fbb30 ACPI DATA addr=0x01ff0000 size=0x1f18
-00001816334i[PCI   ] i440FX PMC write to PAM register 59 (TLB Flush)
-00001817058i[BIOS  ] bios_table_cur_addr: 0x000fbb54
-00004221679i[XGUI  ] charmap update. Font Height is 16
-00005698354i[BIOS  ] IDE time out
-03462023391i[BIOS  ] Booting from 07c0:0000
-03550187578i[SER   ] com1: FIFO enabled
-03550260308i[KBD   ] keyboard: scan convert turned off
-03550275231i[KBD   ] reset-disable command received
-03550275453i[KBD   ] identify keyboard command received
-03550283547i[KBD   ] Switched to scancode set 2
-03550300206i[KBD   ] keyboard: scan convert turned off
-03736542000i[KBD   ] internal keyboard buffer full, ignoring scancode.(f0)
-03736542000i[KBD   ] internal keyboard buffer full, ignoring scancode.(1b)
-03741937000i[KBD   ] internal keyboard buffer full, ignoring scancode.(1c)
-03743841000i[KBD   ] internal keyboard buffer full, ignoring scancode.(f0)
-03743841000i[KBD   ] internal keyboard buffer full, ignoring scancode.(23)
-03749219000i[KBD   ] internal keyboard buffer full, ignoring scancode.(1b)
-03753761000i[KBD   ] internal keyboard buffer full, ignoring scancode.(f0)
-03753761000i[KBD   ] internal keyboard buffer full, ignoring scancode.(1c)
-03754709000i[KBD   ] internal keyboard buffer full, ignoring scancode.(23)
-03756887000i[KBD   ] internal keyboard buffer full, ignoring scancode.(f0)
-03756887000i[KBD   ] internal keyboard buffer full, ignoring scancode.(1b)
-03760819000i[KBD   ] internal keyboard buffer full, ignoring scancode.(1c)
-03762614000i[KBD   ] internal keyboard buffer full, ignoring scancode.(f0)
-03762614000i[KBD   ] internal keyboard buffer full, ignoring scancode.(23)
-03766303000i[KBD   ] internal keyboard buffer full, ignoring scancode.(1b)
-03771062000i[KBD   ] internal keyboard buffer full, ignoring scancode.(23)
-03771758000i[KBD   ] internal keyboard buffer full, ignoring scancode.(f0)
-03771758000i[KBD   ] internal keyboard buffer full, ignoring scancode.(1c)
-03773547000i[KBD   ] internal keyboard buffer full, ignoring scancode.(f0)
-03773547000i[KBD   ] internal keyboard buffer full, ignoring scancode.(1b)
-03779300000i[KBD   ] internal keyboard buffer full, ignoring scancode.(1c)
-03781888000i[KBD   ] internal keyboard buffer full, ignoring scancode.(f0)
-03781888000i[KBD   ] internal keyboard buffer full, ignoring scancode.(23)
-03785477000i[KBD   ] internal keyboard buffer full, ignoring scancode.(1b)
-03788114000i[KBD   ] internal keyboard buffer full, ignoring scancode.(23)
-03790796000i[KBD   ] internal keyboard buffer full, ignoring scancode.(f0)
-03790796000i[KBD   ] internal keyboard buffer full, ignoring scancode.(1c)
-03792439000i[KBD   ] internal keyboard buffer full, ignoring scancode.(f0)
-03792439000i[KBD   ] internal keyboard buffer full, ignoring scancode.(1b)
-03800307000i[KBD   ] internal keyboard buffer full, ignoring scancode.(f0)
-03800307000i[KBD   ] internal keyboard buffer full, ignoring scancode.(23)
-03831511000i[KBD   ] internal keyboard buffer full, ignoring scancode.(11)
-03838545000i[KBD   ] internal keyboard buffer full, ignoring scancode.(f0)
-03838545000i[KBD   ] internal keyboard buffer full, ignoring scancode.(11)
-04873951000i[      ] Ctrl-C detected in signal handler.
-04873951000i[      ] dbg: Quit
-04873951000i[CPU0  ] CPU is in protected mode (active)
-04873951000i[CPU0  ] CS.mode = 32 bit
-04873951000i[CPU0  ] SS.mode = 32 bit
-04873951000i[CPU0  ] EFER   = 0x00000000
-04873951000i[CPU0  ] | EAX=00000020  EBX=00010000  ECX=05000000  EDX=00000000
-04873951000i[CPU0  ] | ESP=00109d92  EBP=00000000  ESI=00000000  EDI=00000000
-04873951000i[CPU0  ] | IOPL=0 ID vip vif ac vm rf nt of df IF tf sf ZF af PF cf
-04873951000i[CPU0  ] | SEG sltr(index|ti|rpl)     base    limit G D
-04873951000i[CPU0  ] |  CS:0008( 0001| 0|  0) 00000000 ffffffff 1 1
-04873951000i[CPU0  ] |  DS:0010( 0002| 0|  0) 00000000 ffffffff 1 1
-04873951000i[CPU0  ] |  SS:0010( 0002| 0|  0) 00000000 ffffffff 1 1
-04873951000i[CPU0  ] |  ES:0010( 0002| 0|  0) 00000000 ffffffff 1 1
-04873951000i[CPU0  ] |  FS:0010( 0002| 0|  0) 00000000 ffffffff 1 1
-04873951000i[CPU0  ] |  GS:0010( 0002| 0|  0) 00000000 ffffffff 1 1
-04873951000i[CPU0  ] | EIP=001010da (001010da)
-04873951000i[CPU0  ] | CR0=0x60000011 CR2=0x00000000
-04873951000i[CPU0  ] | CR3=0x00000000 CR4=0x00000000
-04873951000i[CMOS  ] Last time is 1453331551 (Wed Jan 20 18:12:31 2016)
-04873951000i[XGUI  ] Exit
-04873951000i[SIM   ] quit_sim called with exit code 0
+00000004661i[BIOS  ] $Revision: 11318 $ $Date: 2012-08-06 19:59:54 +0200 (Mo, 06. Aug 2012) $
+00000317850i[KBD   ] reset-disable command received
+00000319008i[BIOS  ] Starting rombios32
+00000319446i[BIOS  ] Shutdown flag 0
+00000320037i[BIOS  ] ram_size=0x02000000
+00000320459i[BIOS  ] ram_end=32MB
+00000332461i[BIOS  ] Found 1 cpu(s)
+00000346634i[BIOS  ] bios_table_addr: 0x000fa438 end=0x000fcc00
+00000674428i[PCI   ] i440FX PMC write to PAM register 59 (TLB Flush)
+00001002357i[P2ISA ] PCI IRQ routing: PIRQA# set to 0x0b
+00001002376i[P2ISA ] PCI IRQ routing: PIRQB# set to 0x09
+00001002395i[P2ISA ] PCI IRQ routing: PIRQC# set to 0x0b
+00001002414i[P2ISA ] PCI IRQ routing: PIRQD# set to 0x09
+00001002424i[P2ISA ] write: ELCR2 = 0x0a
+00001003195i[BIOS  ] PIIX3/PIIX4 init: elcr=00 0a
+00001010872i[BIOS  ] PCI: bus=0 devfn=0x00: vendor_id=0x8086 device_id=0x1237 class=0x0600
+00001013150i[BIOS  ] PCI: bus=0 devfn=0x08: vendor_id=0x8086 device_id=0x7000 class=0x0601
+00001015267i[BIOS  ] PCI: bus=0 devfn=0x09: vendor_id=0x8086 device_id=0x7010 class=0x0101
+00001015493i[PIDE  ] new BM-DMA address: 0xc000
+00001016109i[BIOS  ] region 4: 0x0000c000
+00001018141i[BIOS  ] PCI: bus=0 devfn=0x0b: vendor_id=0x8086 device_id=0x7113 class=0x0680
+00001018370i[ACPI  ] new irq line = 11
+00001018384i[ACPI  ] new irq line = 9
+00001018411i[ACPI  ] new PM base address: 0xb000
+00001018425i[ACPI  ] new SM base address: 0xb100
+00001018453i[PCI   ] setting SMRAM control register to 0x4a
+00001182546i[CPU0  ] Enter to System Management Mode
+00001182546i[CPU0  ] enter_system_management_mode: temporary disable VMX while in SMM mode
+00001182556i[CPU0  ] RSM: Resuming from System Management Mode
+00001346577i[PCI   ] setting SMRAM control register to 0x0a
+00001361440i[BIOS  ] MP table addr=0x000fa510 MPC table addr=0x000fa440 size=0xc8
+00001363254i[BIOS  ] SMBIOS table addr=0x000fa520
+00001366409i[BIOS  ] Firmware waking vector 0x1ff00cc
+00001371432i[BIOS  ] ACPI tables: RSDP addr=0x000fa640 ACPI DATA addr=0x01ff0000 size=0x1f22
+00001371468i[PCI   ] i440FX PMC write to PAM register 59 (TLB Flush)
+00001372192i[BIOS  ] bios_table_cur_addr: 0x000fa664
+00001499809i[VBIOS ] VGABios $Id: vgabios.c,v 1.75 2011/10/15 14:07:21 vruppert Exp $
+00001499880i[BXVGA ] VBE known Display Interface b0c0
+00001499912i[BXVGA ] VBE known Display Interface b0c5
+00001502837i[VBIOS ] VBE Bios $Id: vbe.c,v 1.64 2011/07/19 18:25:05 vruppert Exp $
+00004273356i[XGUI  ] charmap update. Font Height is 16
+00005714410i[BIOS  ] IDE time out
+03623415349i[BIOS  ] Booting from 07c0:0000
+03693526764i[SER   ] com1: FIFO enabled
+03693602155i[KBD   ] keyboard: scan convert turned off
+03693617033i[KBD   ] reset-disable command received
+03693617255i[KBD   ] identify keyboard command received
+03693625344i[KBD   ] Switched to scancode set 2
+04113072428i[KBD   ] keyboard: scan convert turned off
+58845291000i[      ] Ctrl-C detected in signal handler.
+58845291003i[      ] dbg: Quit
+58845291003i[CPU0  ] CPU is in protected mode (halted)
+58845291003i[CPU0  ] CS.mode = 32 bit
+58845291003i[CPU0  ] SS.mode = 32 bit
+58845291003i[CPU0  ] EFER   = 0x00000000
+58845291003i[CPU0  ] | EAX=00000020  EBX=00010000  ECX=05000000  EDX=00101ab0
+58845291003i[CPU0  ] | ESP=00109d96  EBP=00000000  ESI=00000000  EDI=00000000
+58845291003i[CPU0  ] | IOPL=0 ID vip vif ac vm rf nt of df IF tf sf zf af PF cf
+58845291003i[CPU0  ] | SEG sltr(index|ti|rpl)     base    limit G D
+58845291003i[CPU0  ] |  CS:0008( 0001| 0|  0) 00000000 ffffffff 1 1
+58845291003i[CPU0  ] |  DS:0010( 0002| 0|  0) 00000000 ffffffff 1 1
+58845291003i[CPU0  ] |  SS:0010( 0002| 0|  0) 00000000 ffffffff 1 1
+58845291003i[CPU0  ] |  ES:0010( 0002| 0|  0) 00000000 ffffffff 1 1
+58845291003i[CPU0  ] |  FS:0010( 0002| 0|  0) 00000000 ffffffff 1 1
+58845291003i[CPU0  ] |  GS:0010( 0002| 0|  0) 00000000 ffffffff 1 1
+58845291003i[CPU0  ] | EIP=00101b81 (00101b81)
+58845291003i[CPU0  ] | CR0=0x60000011 CR2=0x00000000
+58845291003i[CPU0  ] | CR3=0x00000000 CR4=0x00000000
+58845291003i[CMOS  ] Last time is 1453404860 (Thu Jan 21 14:34:20 2016)
+58845291003i[XGUI  ] Exit
+58845291003i[SIM   ] quit_sim called with exit code 0
