@@ -26,47 +26,17 @@ void empty_keyboard_buffer();
 char keyboard_buffer[KBD_BUFFER_SIZE];
 int keyboard_buffer_idx = 0;
 
-// unsigned char scan_codes_kbd_us[128] =
-// {
-//   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '\t', '`', 0,
-//   0, 0, 0, 0, 0, 'q', '1', 0, 0, 'z', 's', 'a', 'w', '2', 0,
-//   0, 'c', 'x', 'd', 'e', '4', '3', 0, 0, ' ', 'v', 'f', 't', 'r', '5', 0,
-//   0, 'n', 'b', 'h', 'g', 'y', '6', 0, 0, 0, 'm', 'j', 'u', '7', '8', 0
-// };
-
+// Not all the key here 'cause I was lazy and the rest don't matter right now
 unsigned char scan_codes_kbd_us[128] =
 {
-  0, 0, 0, 0,
-  0, 0, 0, 0,
-  0, 0, 0, 0,
-  0, '\t', '`', 0,
-  0, 0, 0, 0,
-  0, 'q', '1', 0,
-  0, 0, 'z', 's',
-  'a', 'w', '2', 0,
-  0, 'c', 'x', 'd',
-  'e', '4', '3', 0,
-  0, ' ', 'v', 'f',
-  't', 'r', '5', 0,
-  0, 'n', 'b', 'h',
-  'g', 'y', '6', 0,
-  0, 0, 'm', 'j',
-  'u', '7', '8', 0,
-  0, ',', 'k', 'i',
-  'o', '0', '9', 0,
-  0, '.', '/', 'l',
-  ';', 'p', '-', 0,
-  '[', '=', 0, 0,
-  0, 0, 0, ']',
-  0, '\\', 0, 0,
-  0, 0, 0, 0,
-  0, '1', 0, '4',
-  '7', 0, 0, 0,
-  '0', '.', '2', '5',
-  '6', '8', 0, 0,
-  0, '+', '3', '-',
-  '*', '9', 0, 0,
-  0, 0, 0, 0
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '\t', '`', 0,
+  0, 0, 0, 0, 0, 'q', '1', 0, 0, 0, 'z', 's', 'a', 'w', '2', 0,
+  0, 'c', 'x', 'd', 'e', '4', '3', 0, 0, ' ', 'v', 'f', 't', 'r', '5', 0,
+  0, 'n', 'b', 'h', 'g', 'y', '6', 0,  0, 0, 'm', 'j',  'u', '7', '8', 0,
+  0, ',', 'k', 'i', 'o', '0', '9', 0, 0, '.', '/', 'l', ';', 'p', '-', 0,
+  '[', '=', 0, 0, 0, 0, 0, ']', 0, '\\', 0, 0, 0, 0, 0, 0,
+  0, '1', 0, '4', '7', 0, 0, 0, '0', '.', '2', '5', '6', '8', 0, 0,
+  0, '+', '3', '-', '*', '9', 0, 0, 0, 0, 0, 0
 };
 
 void keyboard_init(uint8_t port_id)
@@ -77,30 +47,45 @@ void keyboard_init(uint8_t port_id)
 	// Setup scan code set 2.
 	ps2_send_cmd(keyboard_port_id, CMD_RW_SCAN_CODE_SET);
 	if (!ps2_send_cmd_ack(keyboard_port_id, 2, 3)) printf("Failed to set scan code set\n");
-  ps2_poll_data();
   register_interrupt_handler(33, &keyboard_int_handler);
 }
 
 void keyboard_int_handler(register_t regs)
 {
-  putchar(getchar());
+  printf("irq!  ");
+  get_scan_code();
 }
 
 char get_scan_code()
 {
   char c = 0;
+  char d = 0;
+  char key_release = false;
   do {
-    if(ps2_read_data() != c) {
+    char d = ps2_read_data();
+    if (d != c) {
       c = ps2_read_data();
-      if(c > 0) return c;
+      printf("c: %x, d: %x\n", c, d);
+      if (d != c) { key_release = true; }
+
+
+      if (!key_release) {
+        if(keyboard_buffer_idx == (KBD_BUFFER_SIZE - 1)) {
+          keyboard_buffer_idx = 0;
+        }
+        putchar(scan_codes_kbd_us[c]);
+        keyboard_buffer[keyboard_buffer_idx++] = scan_codes_kbd_us[c];
+      }
     }
   } while(1);
-  return;
+
+  return 0;
 }
 
 char getchar()
 {
-  return scan_codes_kbd_us[get_scan_code()];
+  while(keyboard_buffer_idx == 0);
+  return keyboard_buffer[keyboard_buffer_idx--];
 }
 
 void empty_keyboard_buffer()

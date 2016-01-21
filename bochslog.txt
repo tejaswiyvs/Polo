@@ -33,7 +33,7 @@
 00000000000i[      ]   SB16 support: no
 00000000000i[      ]   USB support: no
 00000000000i[      ]   VGA extension support: vbe
-00000000000i[MEM0  ] allocated memory at 0x7fe4fa43d010. after alignment, vector=0x7fe4fa43e000
+00000000000i[MEM0  ] allocated memory at 0x7ff8c1bf6010. after alignment, vector=0x7ff8c1bf7000
 00000000000i[MEM0  ] 32.00MB
 00000000000i[MEM0  ] mem block size = 0x00100000, blocks=32
 00000000000i[MEM0  ] rom at 0xfffe0000/131072 ('/usr/share/bochs/BIOS-bochs-latest')
@@ -43,7 +43,7 @@
 00000000000i[DEV   ] PIIX3 PCI-to-ISA bridge present at device 1, function 0
 00000000000i[PLUGIN] init_dev of 'cmos' plugin device by virtual method
 00000000000i[CMOS  ] Using local time for initial clock
-00000000000i[CMOS  ] Setting initial clock to: Wed Jan 20 22:13:35 2016 (time0=1453346015)
+00000000000i[CMOS  ] Setting initial clock to: Wed Jan 20 22:35:47 2016 (time0=1453347347)
 00000000000i[PLUGIN] init_dev of 'dma' plugin device by virtual method
 00000000000i[DMA   ] channel 4 used by cascade
 00000000000i[PLUGIN] init_dev of 'pic' plugin device by virtual method
@@ -72,7 +72,7 @@
 00000000000i[CD1   ] load cdrom with path='polo.iso'
 00000000000i[CD1   ] Opening image file as a cd.
 00000000000i[HD    ] Media present in CD-ROM drive
-00000000000i[HD    ] Capacity is 2509 sectors (4.90 MB)
+00000000000i[HD    ] Capacity is 2510 sectors (4.90 MB)
 00000000000i[HD    ] Using boot sequence cdrom, none, none
 00000000000i[HD    ] Floppy boot signature check is enabled
 00000000000i[PLUGIN] init_dev of 'pci_ide' plugin device by virtual method
@@ -179,34 +179,34 @@
 00001499880i[BXVGA ] VBE known Display Interface b0c0
 00001499912i[BXVGA ] VBE known Display Interface b0c5
 00001502837i[VBIOS ] VBE Bios $Id: vbe.c,v 1.64 2011/07/19 18:25:05 vruppert Exp $
-00004273356i[XGUI  ] charmap update. Font Height is 16
-00005714410i[BIOS  ] IDE time out
-03623415349i[BIOS  ] Booting from 07c0:0000
-03693526764i[SER   ] com1: FIFO enabled
-03693602155i[KBD   ] keyboard: scan convert turned off
-03693617033i[KBD   ] reset-disable command received
-03693617255i[KBD   ] identify keyboard command received
-03693625344i[KBD   ] Switched to scancode set 2
-04113072428i[KBD   ] keyboard: scan convert turned off
-58845291000i[      ] Ctrl-C detected in signal handler.
-58845291003i[      ] dbg: Quit
-58845291003i[CPU0  ] CPU is in protected mode (halted)
-58845291003i[CPU0  ] CS.mode = 32 bit
-58845291003i[CPU0  ] SS.mode = 32 bit
-58845291003i[CPU0  ] EFER   = 0x00000000
-58845291003i[CPU0  ] | EAX=00000020  EBX=00010000  ECX=05000000  EDX=00101ab0
-58845291003i[CPU0  ] | ESP=00109d96  EBP=00000000  ESI=00000000  EDI=00000000
-58845291003i[CPU0  ] | IOPL=0 ID vip vif ac vm rf nt of df IF tf sf zf af PF cf
-58845291003i[CPU0  ] | SEG sltr(index|ti|rpl)     base    limit G D
-58845291003i[CPU0  ] |  CS:0008( 0001| 0|  0) 00000000 ffffffff 1 1
-58845291003i[CPU0  ] |  DS:0010( 0002| 0|  0) 00000000 ffffffff 1 1
-58845291003i[CPU0  ] |  SS:0010( 0002| 0|  0) 00000000 ffffffff 1 1
-58845291003i[CPU0  ] |  ES:0010( 0002| 0|  0) 00000000 ffffffff 1 1
-58845291003i[CPU0  ] |  FS:0010( 0002| 0|  0) 00000000 ffffffff 1 1
-58845291003i[CPU0  ] |  GS:0010( 0002| 0|  0) 00000000 ffffffff 1 1
-58845291003i[CPU0  ] | EIP=00101b81 (00101b81)
-58845291003i[CPU0  ] | CR0=0x60000011 CR2=0x00000000
-58845291003i[CPU0  ] | CR3=0x00000000 CR4=0x00000000
-58845291003i[CMOS  ] Last time is 1453404860 (Thu Jan 21 14:34:20 2016)
-58845291003i[XGUI  ] Exit
-58845291003i[SIM   ] quit_sim called with exit code 0
+00003767467i[XGUI  ] charmap update. Font Height is 16
+00005714433i[BIOS  ] IDE time out
+03883997032i[BIOS  ] Booting from 07c0:0000
+03985350175i[SER   ] com1: FIFO enabled
+03985425566i[KBD   ] keyboard: scan convert turned off
+03985440434i[KBD   ] reset-disable command received
+03985440651i[KBD   ] identify keyboard command received
+03985448745i[KBD   ] Switched to scancode set 2
+03985465409i[KBD   ] keyboard: scan convert turned off
+3176347112232i[      ] Ctrl-C detected in signal handler.
+3176347112232i[      ] dbg: Quit
+3176347112232i[CPU0  ] CPU is in protected mode (active)
+3176347112232i[CPU0  ] CS.mode = 32 bit
+3176347112232i[CPU0  ] SS.mode = 32 bit
+3176347112232i[CPU0  ] EFER   = 0x00000000
+3176347112232i[CPU0  ] | EAX=00000011  EBX=00000011  ECX=00000051  EDX=00000060
+3176347112232i[CPU0  ] | ESP=00109d0e  EBP=00000000  ESI=00000011  EDI=00000011
+3176347112232i[CPU0  ] | IOPL=0 ID vip vif ac vm rf nt of df if tf sf ZF af PF cf
+3176347112232i[CPU0  ] | SEG sltr(index|ti|rpl)     base    limit G D
+3176347112232i[CPU0  ] |  CS:0008( 0001| 0|  0) 00000000 ffffffff 1 1
+3176347112232i[CPU0  ] |  DS:0010( 0002| 0|  0) 00000000 ffffffff 1 1
+3176347112232i[CPU0  ] |  SS:0010( 0002| 0|  0) 00000000 ffffffff 1 1
+3176347112232i[CPU0  ] |  ES:0010( 0002| 0|  0) 00000000 ffffffff 1 1
+3176347112232i[CPU0  ] |  FS:0010( 0002| 0|  0) 00000000 ffffffff 1 1
+3176347112232i[CPU0  ] |  GS:0010( 0002| 0|  0) 00000000 ffffffff 1 1
+3176347112232i[CPU0  ] | EIP=00101075 (00101075)
+3176347112232i[CPU0  ] | CR0=0x60000011 CR2=0x00000000
+3176347112232i[CPU0  ] | CR3=0x00000000 CR4=0x00000000
+3176347112232i[CMOS  ] Last time is 1456523694 (Fri Feb 26 16:54:54 2016)
+3176347112232i[XGUI  ] Exit
+3176347112232i[SIM   ] quit_sim called with exit code 0
