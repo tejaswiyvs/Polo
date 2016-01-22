@@ -77,16 +77,13 @@ static void wrap_around_if_needed()
 static void buffer_wrap_around()
 {
 	uint16_t buffer_copy[VGA_WIDTH * VGA_HEIGHT];
-	// for (size_t row = 1; row < VGA_HEIGHT; row++) {
-	// 	for (size_t col = 0; col < VGA_WIDTH; col++) {
-	// 		buffer_copy[(row - 1) * VGA_HEIGHT + col] = terminal_buffer[row * VGA_WIDTH + col];
-	// 	}
-	// }
-	memcpy(buffer_copy, terminal_buffer[VGA_WIDTH], (VGA_WIDTH - 1) * VGA_HEIGHT * sizeof(uint16_t));
+	memcpy(buffer_copy, terminal_buffer[VGA_WIDTH], (VGA_HEIGHT - 1) * VGA_WIDTH * sizeof(uint16_t));
+
 	// Set the terminal color properly for the last row.
-	for (int i = VGA_WIDTH * (VGA_HEIGHT - 1); i < VGA_WIDTH * VGA_HEIGHT; i++) {
-		buffer_copy[i] = make_vgaentry(' ', terminal_color);
-	}
+	// for (int i = VGA_WIDTH * (VGA_HEIGHT - 1); i < VGA_WIDTH * VGA_HEIGHT; i++) {
+	// 	buffer_copy[i] = make_vgaentry('a', terminal_color);
+	// }
+
 	memcpy(terminal_buffer, buffer_copy, VGA_WIDTH * VGA_HEIGHT * sizeof(uint16_t));
 }
 

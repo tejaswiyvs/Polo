@@ -19,12 +19,10 @@ void process();
 #define KBD_BUFFER_SIZE				255
 
 void keyboard_int_handler(register_t regs);
-char get_scan_code();
-char get_char();
-void empty_keyboard_buffer();
+void read_scan_code();
 
 char keyboard_buffer[KBD_BUFFER_SIZE];
-int keyboard_buffer_idx = 0;
+volatile int keyboard_buffer_idx = 0;
 
 // Not all the key here 'cause I was lazy and the rest don't matter right now
 unsigned char scan_codes_kbd_us[128] =
@@ -41,7 +39,6 @@ unsigned char scan_codes_kbd_us[128] =
 
 void keyboard_init(uint8_t port_id)
 {
-	printf("Init keyboard\n");
   keyboard_port_id = port_id;
 
 	// Setup scan code set 2.
@@ -52,46 +49,30 @@ void keyboard_init(uint8_t port_id)
 
 void keyboard_int_handler(register_t regs)
 {
-  printf("irq!  ");
-  get_scan_code();
+  read_scan_code();
 }
 
-char get_scan_code()
+void read_scan_code()
 {
-  char c = 0;
-  char d = 0;
-  char key_release = false;
-  do {
-    char d = ps2_read_data();
-    if (d != c) {
+  uint8_t c = 0;
+  bool key_release_event = false;
+
+  while(1) {
+    if (c != ps2_read_data()) {
       c = ps2_read_data();
-      printf("c: %x, d: %x\n", c, d);
-      if (d != c) { key_release = true; }
+      if (c == 0xF0) { key_release_event = true; continue; }
 
-
-      if (!key_release) {
-        if(keyboard_buffer_idx == (KBD_BUFFER_SIZE - 1)) {
-          keyboard_buffer_idx = 0;
-        }
-        putchar(scan_codes_kbd_us[c]);
+      if (!key_release_event) {
+        if (keyboard_buffer_idx == KBD_BUFFER_SIZE - 1) keyboard_buffer_idx = 0;
         keyboard_buffer[keyboard_buffer_idx++] = scan_codes_kbd_us[c];
       }
+      return;
     }
-  } while(1);
-
-  return 0;
+  }
 }
 
 char getchar()
 {
   while(keyboard_buffer_idx == 0);
-  return keyboard_buffer[keyboard_buffer_idx--];
-}
-
-void empty_keyboard_buffer()
-{
-	keyboard_buffer_idx = 0;
-	for (int i = 0; i < KBD_BUFFER_SIZE; i++) {
-		keyboard_buffer[i] = 0;
-	}
+  return keyboard_buffer[--keyboard_buffer_idx];
 }

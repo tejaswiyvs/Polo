@@ -30,9 +30,9 @@ void kernel_main(void)
 	printf("********************************************************************************");
 	printf("\n");
 
-	uint8_t hex_value = 0xAA;
-	printf("test hex printing: %X", hex_value);
-
+	for (int i = 0; i < 100; i++) {
+		printf("This is a line\n");
+	}
 
 	gdt_init();
 	idt_init();
@@ -40,9 +40,8 @@ void kernel_main(void)
 	timer_init();
 
 	while(1) {
-		asm ("hlt");
+		putchar(getchar());
 	}
-	// while(1) {
-	// 	putchar(getchar());
-	// }
+
+	printf("Uhoh!\n Something went wrong we're not supposed to be here\n");
 }

@@ -135,7 +135,6 @@ static bool configure_controller()
   config_byte &= ~(1 << 0);
   config_byte &= ~(1 << 1);
   config_byte &= ~(1 << 6);
-  printf("%x", config_byte);
   set_configuration_byte(config_byte);
 
   outb(PS2_CMD, CMD_TEST_PS2);
@@ -182,10 +181,10 @@ static void reset_and_test_devices()
     }
   }
   if (ps2_port2_available) {
-    bool result = reset_port(2);
-    if (result) {
-      configuration_byte |= 0x2;
-    }
+    // bool result = reset_port(2);
+    // if (result) {
+    //   configuration_byte |= 0x2;
+    // }
   }
 
   set_configuration_byte(configuration_byte);
