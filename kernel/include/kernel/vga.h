@@ -20,7 +20,7 @@ enum vga_color
 	COLOR_LIGHT_RED = 12,
 	COLOR_LIGHT_MAGENTA = 13,
 	COLOR_LIGHT_BROWN = 14,
-	COLOR_WHITE = 15,
+	COLOR_WHITE = 15
 };
 
 static inline uint8_t make_color(enum vga_color fg, enum vga_color bg)

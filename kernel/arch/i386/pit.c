@@ -5,6 +5,8 @@
 // We can reprogram this to whatever frequency we want upto 1.19 Mhz
 // We don't have much use for the PIT right now, so we skip this bit.
 
+volatile uint32_t pit_count;
+
 void pit_init()
 {
   register_interrupt_handler(32, &pit_fired);

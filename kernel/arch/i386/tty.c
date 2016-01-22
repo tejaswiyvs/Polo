@@ -68,7 +68,7 @@ static void wrap_around_if_needed()
 	{
 		buffer_wrap_around();
 		terminal_row = VGA_HEIGHT - 1;
-		terminal_row = 0;
+		terminal_column = 0;
 	}
 
 	terminal_set_cursor(terminal_row, terminal_column);
@@ -76,15 +76,15 @@ static void wrap_around_if_needed()
 
 static void buffer_wrap_around()
 {
-	uint16_t buffer_copy[VGA_WIDTH * VGA_HEIGHT];
-	memcpy(buffer_copy, terminal_buffer[VGA_WIDTH], (VGA_HEIGHT - 1) * VGA_WIDTH * sizeof(uint16_t));
+	for (int i = 1; i < VGA_HEIGHT; i++) {
+		for (int j = 0; j < VGA_WIDTH; j++) {
+			terminal_buffer[(i - 1) * VGA_WIDTH + j] = terminal_buffer[i * VGA_WIDTH + j];
+		}
+	}
 
-	// Set the terminal color properly for the last row.
-	// for (int i = VGA_WIDTH * (VGA_HEIGHT - 1); i < VGA_WIDTH * VGA_HEIGHT; i++) {
-	// 	buffer_copy[i] = make_vgaentry('a', terminal_color);
-	// }
-
-	memcpy(terminal_buffer, buffer_copy, VGA_WIDTH * VGA_HEIGHT * sizeof(uint16_t));
+	for (int i = 0; i < VGA_WIDTH; i++) {
+		terminal_buffer[((VGA_HEIGHT - 1) * VGA_WIDTH) + i] = make_vgaentry(' ', terminal_color);
+	}
 }
 
 void terminal_write(const char* data, size_t size)
