@@ -64,7 +64,7 @@ void setup_remap_pics()
   enable_interrupts();
 
   // Mask everything except the keyboard, timer
-  pic_mask(1, 0xFD);
+  pic_mask(1, 0xFC);
   pic_mask(2, 0xFF);
 }
 
