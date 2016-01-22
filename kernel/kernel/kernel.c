@@ -9,6 +9,7 @@
 #include <kernel/gdt.h>
 #include <kernel/ps2.h>
 #include <kernel/keyboard.h>
+#include <kernel/pit.h>
 
 void kernel_early(void)
 {
@@ -37,7 +38,7 @@ void kernel_main(void)
 	gdt_init();
 	idt_init();
 	ps2_init();
-	timer_init();
+	pit_init();
 
 	while(1) {
 		putchar(getchar());
