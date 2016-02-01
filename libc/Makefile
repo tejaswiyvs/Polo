@@ -34,6 +34,7 @@ stdio/sprintf.o \
 stdio/putchar.o \
 stdio/puts.o \
 stdio/serial.o \
+stdio/gets.o \
 stdlib/abort.o \
 stdlib/log.o \
 stdlib/itoa.o \

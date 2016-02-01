@@ -1,4 +1,5 @@
 #include <kernel/pit.h>
+#include <kernel/isr.h>
 
 // Base PIC frequency is 18.2065 Hz or once every ~54ms
 // 18 -> 1 second.
@@ -6,6 +7,8 @@
 // We don't have much use for the PIT right now, so we skip this bit.
 
 volatile uint32_t pit_count;
+
+void pit_fired(register_t regs);
 
 void pit_init()
 {
